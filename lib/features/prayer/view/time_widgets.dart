@@ -7,10 +7,32 @@ class CurrentTimeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      time,
-      style: const TextStyle(
-          color: Colors.white, fontSize: 35, fontWeight: FontWeight.bold),
+    return Stack(
+      children: [
+        Text(
+          time,
+          style: TextStyle(
+            fontSize: 64,
+            fontWeight: FontWeight.w900,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 3
+              ..color = const Color.fromRGBO(205, 205, 205, 1),
+            decoration: TextDecoration.none,
+            height: 1,
+          ),
+        ),
+        Text(
+          time,
+          style: const TextStyle(
+            fontSize: 64,
+            fontWeight: FontWeight.w900,
+            color: Colors.black,
+            decoration: TextDecoration.none,
+            height: 1,
+          ),
+        )
+      ],
     );
   }
 }
@@ -27,14 +49,14 @@ class TimeLeftWidget extends StatelessWidget {
       children: [
         Text(
           context.l10n.timeLeftText,
-          style: const TextStyle(fontSize: 15, color: Colors.white),
+          style: const TextStyle(fontSize: 18, color: Colors.black),
         ),
         const SizedBox(
           width: 10,
         ),
         Text(
           timeLeft,
-          style: const TextStyle(fontSize: 15, color: Colors.white),
+          style: const TextStyle(fontSize: 18, color: Colors.black),
         ),
       ],
     );
@@ -43,7 +65,7 @@ class TimeLeftWidget extends StatelessWidget {
 
 class CurrentDateWidget extends StatelessWidget {
   final String date;
-  const CurrentDateWidget({super.key,required this.date});
+  const CurrentDateWidget({super.key, required this.date});
 
   @override
   Widget build(BuildContext context) {
