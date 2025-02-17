@@ -1,12 +1,18 @@
-import 'package:adhan/adhan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ruhun_sehbali/features/localization/localization.dart';
 import 'package:ruhun_sehbali/features/prayer/bloc/prayer_bloc.dart';
 
-class PrayerSettingsTab extends StatelessWidget {
+import '../../../prayer/view/prayer_modal_screen.dart';
+
+class PrayerSettingsTab extends StatefulWidget {
   const PrayerSettingsTab({super.key});
 
+  @override
+  State<PrayerSettingsTab> createState() => _PrayerSettingsTabState();
+}
+
+class _PrayerSettingsTabState extends State<PrayerSettingsTab> {
   @override
   Widget build(BuildContext context) {
     Map<String, String> prayerAdjustmentsLocalization = {
@@ -54,7 +60,6 @@ class PrayerSettingsTab extends StatelessWidget {
                           onPressed: () {
                             prayerAdjustments[prayer] =
                                 (prayerAdjustments[prayer]! - 1);
-                            adjustments.fajr += 1;
                           },
                           child: const Text('-'),
                         ),
@@ -71,6 +76,9 @@ class PrayerSettingsTab extends StatelessWidget {
                           onPressed: () {
                             prayerAdjustments[prayer] =
                                 (prayerAdjustments[prayer]! + 1);
+                            context.read<PrayerBloc>().add(
+                                PrayerTimeAdjustedEvent(
+                                    prayerAdjustments[prayer] ?? 0));
                           },
                           child: const Text('+'),
                         ),
@@ -83,19 +91,52 @@ class PrayerSettingsTab extends StatelessWidget {
           ),
           const SizedBox(height: 30),
           Center(
-            child: ElevatedButton(
-              onPressed: () {
-                final updatedAdjustments = prayerAdjustments.map(
-                  (key, value) => MapEntry(key, value.toString()),
-                );
-                print(adjustments.fajr);
-                //provider.saveAdjustments(updatedAdjustments);
-              },
-              child: const Text('Save Adjustments'),
+            child: Row(
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    final updatedAdjustments = prayerAdjustments.map(
+                      (key, value) => MapEntry(key, value.toString()),
+                    );
+                    context.read<PrayerBloc>().add(SavePrayerSettingsEvent());
+                    //provider.saveAdjustments(updatedAdjustments);
+                  },
+                  child: const Text('Save Adjustments'),
+                ),
+                SizedBox(
+                  width: 50,
+                ),
+                ElevatedButton(
+                  onPressed: () => _showPrayerTimeModal(
+                      context, state.prayerData.prayerWeekdays),
+                  child: const Text('Update week days'),
+                ),
+              ],
             ),
           ),
         ],
       );
+    });
+  }
+
+  void _showPrayerTimeModal(
+      BuildContext context, Map<String, Map<String, bool>> initialData) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allow the modal to take up most of the screen
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: PrayerTimeModal(initialData: initialData),
+        );
+      },
+    ).then((updatedData) {
+      if (updatedData != null) {
+        if (mounted)   {
+          context.read<PrayerBloc>().add(PrayerWeekDaysEvent(updatedData));}
+      }
     });
   }
 }

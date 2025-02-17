@@ -28,7 +28,7 @@ class PrayerData extends Equatable {
   final List<Country> countries;
   final List<State> states;
   final List<City> cities;
-  final Map<Prayer, Duration> prayerAdjustments;
+  final Map<String, Map<String,bool>> prayerWeekdays;
   final PrayerTimes prayerTimes;
   final String remainingTime;
  final List<bool> prayerPassed; 
@@ -47,7 +47,7 @@ class PrayerData extends Equatable {
     required this.states,
     required this.cities,
     required this.prayerTimes,
-    required this.prayerAdjustments,
+    required this.prayerWeekdays,
     required this.remainingTime,
     required this.prayerPassed,
     required this.currentDate,
@@ -68,7 +68,13 @@ class PrayerData extends Equatable {
       states: const [],
       cities: const [],
       prayerTimes: prayerTimes,
-      prayerAdjustments: {},
+      prayerWeekdays: {
+        'fajr': {'Monday':true,'Tuesday':true,'Wednesday':true,'Thursday':true,'Friday':true,'Saturday':true,'Sunday':true,},
+        'tulu': {'Monday':true,'Tuesday':true,'Wednesday':true,'Thursday':true,'Friday':true,'Saturday':true,'Sunday':true,},
+        'dhuhr':{'Monday':true,'Tuesday':true,'Wednesday':true,'Thursday':true,'Friday':true,'Saturday':true,'Sunday':true,},
+        'asr': {'Monday':true,'Tuesday':true,'Wednesday':true,'Thursday':true,'Friday':true,'Saturday':true,'Sunday':true,},
+        'magrib': {'Monday':true,'Tuesday':true,'Wednesday':true,'Thursday':true,'Friday':true,'Saturday':true,'Sunday':true,},
+        'isha': {'Monday':true,'Tuesday':true,'Wednesday':true,'Thursday':true,'Friday':true,'Saturday':true,'Sunday':true,},},
       remainingTime: '',
       prayerPassed: [
     false,
@@ -95,7 +101,7 @@ class PrayerData extends Equatable {
     List<State>? states,
     List<City>? cities,
     PrayerTimes? prayerTimes,
-    Map<Prayer, Duration>? prayerAdjustments,
+    Map<String, Map<String,bool>>? prayerWeekdays,
     String? remainingTime,
     List<bool>? prayerPassed,
         String? currentDate,
@@ -114,7 +120,7 @@ class PrayerData extends Equatable {
       states: states ?? this.states,
       cities: cities ?? this.cities,
       prayerTimes: prayerTimes ?? this.prayerTimes,
-      prayerAdjustments: prayerAdjustments ?? this.prayerAdjustments,
+      prayerWeekdays: prayerWeekdays ?? this.prayerWeekdays,
       remainingTime: remainingTime ?? this.remainingTime,
       prayerPassed: prayerPassed ?? this.prayerPassed,
       currentDate: currentDate ?? this.currentDate,
@@ -135,7 +141,7 @@ class PrayerData extends Equatable {
         states,
         cities,
         prayerTimes,
-        prayerAdjustments,
+        prayerWeekdays,
         remainingTime,
       ];
 }

@@ -116,6 +116,7 @@ class Quran {
         name: name,
         imgAsset: qariImages[i],
         imgUrls: prepareUrl(json, name),
+        mp3Names: prepareNames(json, name)
       );
     });
     return Quran(qariList: qariList);
@@ -124,7 +125,9 @@ class Quran {
   /// Expects each qari's section to have a 'Hatim' list.
   static List<String> prepareUrl(Map<String, dynamic> json, String name) {
     return List<Map<String,dynamic>>.from(json[name]['Hatim']).map((item) => '$url/$name/Hatim/${item['name']}').toList();
- 
+  }
+  static List<String> prepareNames(Map<String, dynamic> json, String name) {
+    return List<Map<String,dynamic>>.from(json[name]['Hatim']).map((item) => "${item['name']}").toList();
   }
 }
 
@@ -132,8 +135,9 @@ class Qari {
   final String name;
   final String imgAsset;
   final List<String> imgUrls;
+  final List<String> mp3Names;
 
-  Qari({required this.name, required this.imgAsset, required this.imgUrls});
+  Qari({required this.name, required this.imgAsset, required this.imgUrls,required this.mp3Names});
 }
 
 /// --------------------

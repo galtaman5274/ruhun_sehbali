@@ -10,7 +10,6 @@ import '../../adhan/adhan_page.dart';
 import '../../quran/view/quran.dart';
 import '../../screen_saver/bloc/screen_saver.dart';
 import '../../settings/providers/ayine_json_cubit.dart';
-import '../../settings/providers/data_models.dart';
 import '../../settings/view/settings_screen.dart';
 import 'components/home_page.dart';
 
@@ -61,11 +60,7 @@ class HomeScreen extends StatelessWidget {
 
                   return Stack(
                     children: [
-                      NavigationScreen(
-                        alert: state.alert,
-                        azanFiles: state.azanFiles,
-                        quran: state.quran,
-                      ),
+                      NavigationScreen(),
                       ScreenSaverView(
                         screenSaver: state.screenSaver,
                       )
@@ -78,11 +73,7 @@ class HomeScreen extends StatelessWidget {
 
                   return Stack(
                     children: [
-                      NavigationScreen(
-                        alert: state.alert,
-                        azanFiles: state.azanFiles,
-                        quran: state.quran,
-                      ),
+                      NavigationScreen( ),
                       ScreenSaverView(
                         screenSaver: state.screenSaver,
                       )
@@ -100,15 +91,8 @@ class HomeScreen extends StatelessWidget {
 }
 
 class NavigationScreen extends StatelessWidget {
-  final Alert alert;
-  final AzanFiles azanFiles;
-  final Quran quran;
-
   const NavigationScreen({
     super.key,
-    required this.alert,
-    required this.azanFiles,
-    required this.quran,
   });
 
   @override

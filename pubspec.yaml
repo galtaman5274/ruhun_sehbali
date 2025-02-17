@@ -49,8 +49,10 @@ dependencies:
   path_provider: ^2.1.5
   permission_handler: ^11.3.1
   dio: ^5.7.0
-  open_filex: ^4.6.0
   file_picker: ^8.1.7
+  workmanager: ^0.5.2
+  package_info_plus: ^8.2.1
+  open_file: ^3.5.10
 
 
 dev_dependencies:

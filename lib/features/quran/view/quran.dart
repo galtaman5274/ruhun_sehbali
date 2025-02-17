@@ -57,7 +57,7 @@ class QariScreen extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => MediaList(quranList: qariList[index].imgUrls),
+                      builder: (_) => MediaList(quranList: qariList[index].imgUrls,mp3List: qariList[index].mp3Names,),
                     ),
                   ),
                   title: Text(qariName),

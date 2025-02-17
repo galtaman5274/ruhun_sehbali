@@ -6,7 +6,9 @@ import 'media_player.dart';
 
 class MediaList extends StatelessWidget {
   final List<String> quranList;
-  const MediaList({super.key, required this.quranList});
+    final List<String> mp3List;
+
+  const MediaList({super.key, required this.quranList,required this.mp3List});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +25,13 @@ class MediaList extends StatelessWidget {
           itemCount: quranList.length,
           itemBuilder: (context, index) {
             return ListTile(
-              title: Text('${index + 1}'),
+              title: Row(
+                children: [
+                  Text('${index + 1}'),
+                  SizedBox(width: 10,),
+                  Text(mp3List[index])
+                ],
+              ),
               onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(

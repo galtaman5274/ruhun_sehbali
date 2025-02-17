@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -18,7 +19,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => AyineJsonCubit()..checkForAyineJson()),
+          BlocProvider(create: (_) => AyineJsonCubit(dio: Dio())..checkForAyineJson()),
           BlocProvider(
             create: (_) =>
                 ScreenSaverBloc(),

@@ -3,24 +3,30 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:ruhun_sehbali/features/settings/providers/data_source.dart';
 import 'package:ruhun_sehbali/features/storage_controller/storage_controller.dart';
 import 'data_models.dart';
 part 'ayine_states.dart';
 
 class AyineJsonCubit extends Cubit<AyineJsonState> {
   final Dio _dio;
-  final StorageController _secureStorage =  StorageController();
+  DataSource dataSource;
+  final StorageController _secureStorage = StorageController();
 
   AyineJsonCubit({
-    Dio? dio,
+    required Dio dio,
     StorageController? secureStorage,
-  })  : _dio = dio ?? Dio(),
-        super(AyineJsonInitial());
+  })  : _dio = dio,
+        dataSource = DataSource(dio),
+        super(AyineJsonInitial()) {
+    //compareAndReplaceJson();
+    
+  }
   Future<void> checkForAyineJson() async {
     emit(AyineJsonInitial());
     try {
       // Try to read the JSON from secure storage.
-      String? storedJson = await _secureStorage.getValue( 'ayine_json');
+      String? storedJson = await _secureStorage.getValue('ayine_json');
 
       // If not stored, attempt to download it.
       if (storedJson == null) {
@@ -33,7 +39,7 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
             storedJson = response.data is String
                 ? fixMalformedJson(response.data)
                 : jsonEncode(response.data);
-            await _secureStorage.saveValue('ayine_json',storedJson);
+            await _secureStorage.saveValue('ayine_json', storedJson);
           } else {
             throw Exception(
                 'Failed to download JSON. Status code: ${response.statusCode}');
@@ -162,6 +168,7 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
     // Optionally, you could add further fixes here (for example, wrapping unquoted string values).
     return output;
   }
+
   Future<bool> checkIfSetupRequired() async {
     final results = await Future.wait([
       _secureStorage.getValue('longitude'),
@@ -169,5 +176,63 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
       _secureStorage.getValue('city'),
     ]);
     return results.any((element) => element == null);
+  }
+
+  Future<void> compareAndReplaceJson() async {
+    try {
+      await _dio.get(
+        'https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=scan',
+      );
+      // Step 1: Get the stored JSON from secure storage.
+      String? storedJson = await _secureStorage.getValue('ayine_json');
+
+      // Step 2: Download the latest JSON from the server.
+      final response = await _dio.get(
+        'https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=view',
+        options: Options(responseType: ResponseType.json),
+      );
+
+      if (response.statusCode == 200) {
+        checkUpdate(response.data);
+
+        // Process the downloaded JSON.
+        String downloadedJson = response.data is String
+            ? fixMalformedJson(response.data)
+            : jsonEncode(response.data);
+        // Step 3: Compare the downloaded JSON with the stored JSON.
+        if (storedJson == null || storedJson != downloadedJson) {
+          // If they are different, replace the stored JSON with the new one.
+          await _secureStorage.saveValue('ayine_json', downloadedJson);
+          print('JSON replaced with the latest version.');
+        } else {
+          print('JSON is already up-to-date.');
+        }
+      } else {
+        throw Exception(
+            'Failed to download JSON. Status code: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      throw Exception('Error downloading JSON: ${e.message}');
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
+
+  Future<void> checkUpdate(Map<String, dynamic> json) async {
+    try {
+      String? version = await _secureStorage.getValue('version');
+      if (version != null) {
+        List<int> v1Parts = version.split('.').map(int.parse).toList();
+        v1Parts[2] = v1Parts[2] + 1;
+        final newVersion = v1Parts.join('.');
+        if (json['UpdateApk'][newVersion] != null)
+          dataSource.downloadAndInstallApk(newVersion);
+        print(newVersion);
+      }
+    } on DioException catch (e) {
+      throw Exception('Error downloading JSON: ${e.message}');
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
   }
 }

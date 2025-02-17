@@ -6,9 +6,13 @@ abstract class PrayerEvent extends Equatable {
   @override
   List<Object> get props => [];
 }
+
 class InitEvent extends PrayerEvent {}
+
 class StartTimerEvent extends PrayerEvent {}
+
 class LoadNextPrayerEvent extends PrayerEvent {}
+
 class UpdateCountryEvent extends PrayerEvent {
   final String country;
   const UpdateCountryEvent(this.country);
@@ -16,6 +20,7 @@ class UpdateCountryEvent extends PrayerEvent {
   @override
   List<Object> get props => [country];
 }
+
 // Existing events
 class UpdateRemainingTimeEvent extends PrayerEvent {
   const UpdateRemainingTimeEvent();
@@ -72,6 +77,14 @@ class SavePrayerSettingsEvent extends PrayerEvent {
 // New events for loading location lists
 class LoadCountriesEvent extends PrayerEvent {}
 
+class PrayerTimeAdjustedEvent extends PrayerEvent {
+  final int adjustment;
+  const PrayerTimeAdjustedEvent(this.adjustment);
+}
+class PrayerWeekDaysEvent extends PrayerEvent {
+  final  Map<String, Map<String,bool>> adjustment;
+  const PrayerWeekDaysEvent(this.adjustment);
+}
 class LoadStatesEvent extends PrayerEvent {
   final String countryCode;
   const LoadStatesEvent(this.countryCode);
