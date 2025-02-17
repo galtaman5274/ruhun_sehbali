@@ -52,6 +52,7 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
     await _secureStorage.saveValue(
       'full',txt
     );
+    
     emit(ScreenSaverInitial(state.saverStateData));
     emit(ScreenSaverUpdated(
         state.saverStateData.copyWith(screenSaverFull: event.screenSaverFull)));

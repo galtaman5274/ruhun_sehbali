@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => LocaleProvider()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()..init()),
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
       ],
       child: ScreenUtilInit(
