@@ -65,7 +65,7 @@ class ScreenSaverStateData extends Equatable {
         ],
         currentIndex: 0,
         currentAnimationType: 'fade',
-        screenSaverFull: false,
+        screenSaverFull: true,
         imgUrl: 'tr',
         personalImagePath: '',
         );

@@ -1,6 +1,5 @@
-import 'dart:developer';
 
-import 'package:dio/dio.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -27,24 +26,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    getAyineJson();
   }
 
-  Future<void> getAyineJson() async {
-    final checkResponse = await Dio().get(
-      'https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=scan',
-    );
-    log('<><><><><><> scan response status: ${checkResponse.statusCode}');
-
-    final response = await Dio().get(
-      'https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=view',
-      options: Options(responseType: ResponseType.json),
-    );
-    final cubit = AyineJsonCubit(dio: Dio());
-    await cubit.checkUpdate(response.data);
-    log('<><><><><><> response status: ${response.statusCode}');
-    log('<><><><><><> response data: ${response.data['UpdateApk']}');
-  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -89,6 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 } else if (state is AyineJsonLoaded) {
                   context.read<PrayerBloc>().add(StartTimerEvent());
                   context.read<QariBloc>().add(LoadQariList(state.quran));
+                  context.read<AyineJsonCubit>().saveToStorage(locale.languageCode);
 
                   return Stack(
                     children: [
@@ -123,10 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class NavigationScreen extends StatelessWidget {
-  const NavigationScreen({
-    super.key,
-  });
-
+  const NavigationScreen({super.key});
   @override
   Widget build(BuildContext context) {
     return Consumer<NavigationProvider>(

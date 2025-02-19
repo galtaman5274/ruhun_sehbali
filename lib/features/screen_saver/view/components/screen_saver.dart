@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:ruhun_sehbali/features/screen_saver/bloc/screen_saver.dart';
 import 'image_animation.dart';
 

@@ -61,12 +61,12 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
         final latitude = double.parse(results[4] ?? '0');
         final calcMethod = int.parse(results[5] ?? '0');
         final asrIndex = int.parse(results[6] ?? '0');
-        final fajr = int.parse(results[6] ?? '0');
-        final tulu = int.parse(results[7] ?? '0');
-        final dhuhr = int.parse(results[8] ?? '0');
-        final asr = int.parse(results[9] ?? '0');
-        final maghrib = int.parse(results[10] ?? '0');
-        final isha = int.parse(results[11] ?? '0');
+        final fajr = int.parse(results[7] ?? '0');
+        final tulu = int.parse(results[8] ?? '0');
+        final dhuhr = int.parse(results[9] ?? '0');
+        final asr = int.parse(results[10] ?? '0');
+        final maghrib = int.parse(results[11] ?? '0');
+        final isha = int.parse(results[12] ?? '0');
         final prayerTimes = PrayerTimes.today(
           Coordinates(latitude, longitude),
           CalculationMethod.values[calcMethod].getParameters()
@@ -286,7 +286,7 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
     final uniqueStates = states.toSet().toList();
     final updatedData = state.prayerData
         .copyWith(states: uniqueStates, state: state.prayerData.state);
-    add(LoadCitiesEvent(event.countryCode, uniqueStates.first.isoCode));
+    add(LoadCitiesEvent(event.countryCode, state.prayerData.state));
     emit(PrayerDataUpdated(updatedData));
   }
 
@@ -296,7 +296,7 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
     final uniqueCities = cities.toSet().toList();
     final updatedData = state.prayerData
         .copyWith(cities: uniqueCities, city: state.prayerData.city);
-    add(UpdateCityEvent(uniqueCities.first.name));
+    add(UpdateCityEvent(state.prayerData.city));
     emit(PrayerDataUpdated(updatedData));
   }
 

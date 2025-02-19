@@ -73,10 +73,11 @@ class SetupLocation extends StatelessWidget {
             DropdownButton<String>(
               isExpanded: true,
               hint: const Text("Select City"),
-              value:
-                  prayerData.cities.any((city) => city.name == prayerData.city)
-                      ? prayerData.city
-                      : null, // Ensures a valid city is selected
+              value: prayerData.cities.isNotEmpty &&
+                      prayerData.cities
+                          .any((city) => city.name == prayerData.city)
+                  ? prayerData.city
+                  : null, // Ensure the selected city exists
               items: prayerData.cities
                   .map((city) => DropdownMenuItem(
                         value: city.name,

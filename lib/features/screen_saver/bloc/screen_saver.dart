@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:adhan/adhan.dart';
 import 'package:equatable/equatable.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -37,22 +36,21 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
         await _secureStorage.getValue('animationDuration');
     final folderPath = await _secureStorage.getValue('folderPath');
     final txt = await _secureStorage.getValue('full');
-    final bool isFull = txt == 'true' ;
+    final bool isFull = txt == 'true';
     final newAnimationDuration = int.tryParse(storedAnimationDuration ?? '') ??
         state.saverStateData.animationDuration;
     emit(ScreenSaverInitial(state.saverStateData));
     emit(ScreenSaverUpdated(state.saverStateData.copyWith(
         animationDuration: newAnimationDuration,
-        personalImagePath: folderPath,screenSaverFull: isFull)));
+        personalImagePath: folderPath,
+        screenSaverFull: isFull)));
   }
 
   void _onScreenSaverFull(
       ScreenSaverFullEvent event, Emitter<ScreenSaverState> emit) async {
     final txt = event.screenSaverFull ? 'true' : 'false';
-    await _secureStorage.saveValue(
-      'full',txt
-    );
-    
+    await _secureStorage.saveValue('full', txt);
+
     emit(ScreenSaverInitial(state.saverStateData));
     emit(ScreenSaverUpdated(
         state.saverStateData.copyWith(screenSaverFull: event.screenSaverFull)));

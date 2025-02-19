@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
@@ -19,8 +20,22 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
   })  : _dio = dio,
         dataSource = DataSource(dio),
         super(AyineJsonInitial()) {
-    //compareAndReplaceJson();
-    
+    //getAyineJson();
+  }
+  Future<void> getAyineJson() async {
+    final checkResponse = await Dio().get(
+      'https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=scan',
+    );
+    log('<><><><><><> scan response status: ${checkResponse.statusCode}');
+
+    final response = await Dio().get(
+      'https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=view',
+      options: Options(responseType: ResponseType.json),
+    );
+    final cubit = AyineJsonCubit(dio: Dio());
+    await cubit.checkUpdate(response.data);
+    log('<><><><><><> response status: ${response.statusCode}');
+    log('<><><><><><> response data: ${response.data['UpdateApk']}');
   }
   Future<void> checkForAyineJson() async {
     emit(AyineJsonInitial());
@@ -152,7 +167,8 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
         emit(AyineJsonError(message: 'Error downloading images: $e'));
       }
     } else {
-      emit(AyineJsonError(message: 'Content must be downloaded first.'));
+      checkForAyineJson().then((_)=>saveToStorage(locale));
+      //emit(AyineJsonError(message: 'Content must be downloaded first.'));
     }
   }
 
