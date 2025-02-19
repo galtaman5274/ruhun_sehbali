@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -13,13 +16,42 @@ import '../../settings/providers/ayine_json_cubit.dart';
 import '../../settings/view/settings_screen.dart';
 import 'components/home_page.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    getAyineJson();
+  }
+
+  Future<void> getAyineJson() async {
+    final checkResponse = await Dio().get(
+      'https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=scan',
+    );
+    log('<><><><><><> scan response status: ${checkResponse.statusCode}');
+
+    final response = await Dio().get(
+      'https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=view',
+      options: Options(responseType: ResponseType.json),
+    );
+    final cubit = AyineJsonCubit(dio: Dio());
+    await cubit.checkUpdate(response.data);
+    log('<><><><><><> response status: ${response.statusCode}');
+    log('<><><><><><> response data: ${response.data['UpdateApk']}');
+  }
 
   @override
   Widget build(BuildContext context) {
     final locale = context.read<LocaleProvider>().locale;
-    context.read<ScreenSaverBloc>().add(ResetInactivityTimer(locale.languageCode));
+    context
+        .read<ScreenSaverBloc>()
+        .add(ResetInactivityTimer(locale.languageCode));
 
     return BlocListener<AyineJsonCubit, AyineJsonState>(
       listener: (context, state) {
@@ -73,7 +105,7 @@ class HomeScreen extends StatelessWidget {
 
                   return Stack(
                     children: [
-                      NavigationScreen( ),
+                      NavigationScreen(),
                       ScreenSaverView(
                         screenSaver: state.screenSaver,
                       )
