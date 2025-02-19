@@ -220,15 +220,19 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
 
   Future<void> checkUpdate(Map<String, dynamic> json) async {
     try {
-      String? version = await _secureStorage.getValue('version');
-      if (version != null) {
-        List<int> v1Parts = version.split('.').map(int.parse).toList();
-        v1Parts[2] = v1Parts[2] + 1;
-        final newVersion = v1Parts.join('.');
-        if (json['UpdateApk'][newVersion] != null)
-          dataSource.downloadAndInstallApk(newVersion);
-        print(newVersion);
-      }
+      final newVersion = (json['UpdateApk'] as Map).entries.last.key;
+      await DataSource(Dio()).checkVersion(newVersion);
+      // String? version = await _secureStorage.getValue('version');
+      // log('stored version : $version');
+      // if (version != null) {
+      //   List<int> v1Parts = version.split('.').map(int.parse).toList();
+      //   v1Parts[2] = v1Parts[2] + 1;
+      //   final newVersion = v1Parts.join('.');
+      //   log('new version $newVersion, version from json ${json['UpdateApk'][newVersion]}');
+      // if (json['UpdateApk'][newVersion] != null)
+      //   dataSource.downloadAndInstallApk(newVersion);
+      // print(newVersion);
+      // }
     } on DioException catch (e) {
       throw Exception('Error downloading JSON: ${e.message}');
     } catch (e) {

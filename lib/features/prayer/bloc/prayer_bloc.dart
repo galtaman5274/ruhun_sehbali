@@ -30,8 +30,7 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
     on<LoadStatesEvent>(_onLoadStates);
     on<LoadCitiesEvent>(_onLoadCities);
     on<PrayerTimeAdjustedEvent>(_onPrayerAdjustments);
-        on<PrayerWeekDaysEvent>(_onPraterWeedDaysUpdatd);
-
+    on<PrayerWeekDaysEvent>(_onPraterWeedDaysUpdatd);
   }
 
   /// **Load stored prayer settings and initialize prayer times**
@@ -162,7 +161,8 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
 
   Future<void> _onPrayerAdjustments(
       PrayerTimeAdjustedEvent event, Emitter<PrayerState> emit) async {
-    final PrayerTimes prayerTimes =  state.prayerData.prayerTimes..calculationParameters.adjustments.fajr = event.adjustment;
+    final PrayerTimes prayerTimes = state.prayerData.prayerTimes
+      ..calculationParameters.adjustments.fajr = event.adjustment;
     final updatedData = state.prayerData.copyWith(
       prayerTimes: prayerTimes,
     );
@@ -200,12 +200,18 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
       prayerTimes: PrayerTimes.today(
         Coordinates(data.latitude, data.longitude),
         CalculationMethod.values[data.calculationMethod.index].getParameters()
-        ..adjustments.fajr = data.prayerTimes.calculationParameters.adjustments.fajr
-            ..adjustments.sunrise = data.prayerTimes.calculationParameters.adjustments.sunrise
-            ..adjustments.dhuhr = data.prayerTimes.calculationParameters.adjustments.dhuhr
-            ..adjustments.asr = data.prayerTimes.calculationParameters.adjustments.asr
-            ..adjustments.maghrib = data.prayerTimes.calculationParameters.adjustments.maghrib
-            ..adjustments.isha = data.prayerTimes.calculationParameters.adjustments.isha
+          ..adjustments.fajr =
+              data.prayerTimes.calculationParameters.adjustments.fajr
+          ..adjustments.sunrise =
+              data.prayerTimes.calculationParameters.adjustments.sunrise
+          ..adjustments.dhuhr =
+              data.prayerTimes.calculationParameters.adjustments.dhuhr
+          ..adjustments.asr =
+              data.prayerTimes.calculationParameters.adjustments.asr
+          ..adjustments.maghrib =
+              data.prayerTimes.calculationParameters.adjustments.maghrib
+          ..adjustments.isha =
+              data.prayerTimes.calculationParameters.adjustments.isha
           ..madhab = Madhab.values[data.asrMethodIndex],
       ),
     );
@@ -227,8 +233,16 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
     emit(PrayerDataUpdated(updatedData));
 
     try {
-      final address =
-          '${event.city}, ${state.prayerData.state}, ${state.prayerData.country}';
+      final countryName = state.prayerData.countries
+          .firstWhere((e) => e.isoCode == state.prayerData.country)
+          .name;
+      final stateName = state.prayerData.states
+          .firstWhere((e) => e.isoCode == state.prayerData.state)
+          .name;
+      // final address =
+      //     '${event.city}, ${state.prayerData.state}, ${state.prayerData.country}';
+      final address = '${event.city}, $stateName, $countryName';
+      print('Adress -> $address');
       final locations = await locationFromAddress(address);
       if (locations.isNotEmpty) {
         add(UpdateCoordinatesEvent(
@@ -338,10 +352,10 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
       longitude: event.longitude,
     )));
   }
+
   void _onPraterWeedDaysUpdatd(
       PrayerWeekDaysEvent event, Emitter<PrayerState> emit) {
-    emit(PrayerDataUpdated(state.prayerData.copyWith(
-      prayerWeekdays: event.adjustment
-    )));
+    emit(PrayerDataUpdated(
+        state.prayerData.copyWith(prayerWeekdays: event.adjustment)));
   }
 }

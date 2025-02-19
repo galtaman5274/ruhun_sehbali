@@ -1,7 +1,7 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/widgets.dart';
 import 'package:open_file/open_file.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -13,26 +13,32 @@ class DataSource {
   final baseApi = 'https://app.ayine.tv/Ayine/UpdateApk/';
   final apkPath = 'app-release.apk';
 
-  Future<void> _requestPermission(Permission permission) async {
+  Future<bool> _requestPermission(Permission permission) async {
     var status = await permission.status;
-    if (status.isDenied) {
+    if (!status.isGranted) {
       await permission.request();
       var status = await permission.status;
-      debugPrint('>>>>>> $permission status: $status');
+      print('>>>>>> $permission status: $status');
+      return status.isGranted;
     }
+    return status.isGranted;
   }
 
   Future<void> downloadAndInstallApk(String version) async {
     try {
       // Request permission
-      await _requestPermission(Permission.requestInstallPackages);
-      await _requestPermission(Permission.storage);
-      await _requestPermission(Permission.manageExternalStorage);
-      final filePath = await _downloadAPK('$baseApi$version/$apkPath');
-      debugPrint('file path -> $filePath');
-      await _installAPK(filePath);
+      final permission1 = await _requestPermission(Permission.storage);
+      final permission2 =
+          await _requestPermission(Permission.manageExternalStorage);
+      final permission3 =
+          await _requestPermission(Permission.requestInstallPackages);
+      if (permission1 && permission2 && permission3) {
+        final filePath = await _downloadAPK('$baseApi$version/$apkPath');
+        print('file path -> $filePath');
+        await _installAPK(filePath);
+      }
     } catch (e) {
-      debugPrint('Error on installing... ${e.toString()}');
+      print('Error on installing... ${e.toString()}');
     }
   }
 
@@ -42,15 +48,19 @@ class DataSource {
     final filePath = '${directory!.path}/downloaded_app.apk';
 
     // Send HTTP GET request to download the file
-    debugPrint('Get request...');
-    final response = await _dio.get(url);
+    print('Get request...');
+    final response = await _dio.get(
+      url,
+      options: Options(responseType: ResponseType.bytes),
+    );
 
     if (response.statusCode == 200) {
-      debugPrint('Status 200');
+      print('Status 200');
       // Save the file to the local storage
       final file = File(filePath);
-      await file.writeAsBytes(response.data);
-      debugPrint('Written as bytes');
+      print('Response data type : ${response.data.runtimeType}');
+      await file.writeAsBytes((response.data as Uint8List).toList());
+      print('Written as bytes');
     } else {
       throw Exception("Failed to download APK");
     }
@@ -59,11 +69,11 @@ class DataSource {
 
   Future<void> _installAPK(String filePath) async {
     try {
-      debugPrint('>>>>> Installing started');
+      print('>>>>> Installing started');
       final result = await OpenFile.open(filePath);
-      debugPrint('Install finished : ${result.message}');
+      print('Install finished : ${result.message}');
     } catch (e) {
-      debugPrint("Installation failed: $e");
+      print("Installation failed: $e");
     }
   }
 
@@ -72,7 +82,7 @@ class DataSource {
     String version2 = packageInfo.version;
 
     int result = compareVersion(version1, version2);
-    if (result < 0) downloadAndInstallApk(version1);
+    if (result > 0) await downloadAndInstallApk(version1);
   }
 
   int compareVersion(String version1, String version2) {
