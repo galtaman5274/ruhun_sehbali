@@ -20,20 +20,20 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
   })  : _dio = dio,
         dataSource = DataSource(dio),
         super(AyineJsonInitial()) {
-    //getAyineJson();
+    getAyineJson();
   }
   Future<void> getAyineJson() async {
-    final checkResponse = await Dio().get(
+    final checkResponse = await _dio.get(
       'https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=scan',
     );
     log('<><><><><><> scan response status: ${checkResponse.statusCode}');
 
-    final response = await Dio().get(
+    final response = await _dio.get(
       'https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=view',
       options: Options(responseType: ResponseType.json),
     );
-    final cubit = AyineJsonCubit(dio: Dio());
-    await cubit.checkUpdate(response.data);
+    
+    await checkUpdate(response.data);
     log('<><><><><><> response status: ${response.statusCode}');
     log('<><><><><><> response data: ${response.data['UpdateApk']}');
   }

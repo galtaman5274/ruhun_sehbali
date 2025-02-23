@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:adhan/adhan.dart';
 import 'package:equatable/equatable.dart';
 import 'package:geocoding/geocoding.dart';
@@ -51,8 +52,10 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
         _secureStorage.getValue('asr'),
         _secureStorage.getValue('maghrib'),
         _secureStorage.getValue('isha'),
+        _secureStorage.getValue('prayerWeekdays'),
       ]);
 
+      // Convert JSON back to a Map
       final country = results[0];
       if (country != null) {
         final currentState = results[1];
@@ -67,6 +70,10 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
         final asr = int.parse(results[10] ?? '0');
         final maghrib = int.parse(results[11] ?? '0');
         final isha = int.parse(results[12] ?? '0');
+        Map<String, dynamic> decodedMap = jsonDecode(results[13] ?? '');
+        final prayerWeekdays = decodedMap
+            .map((key, value) => MapEntry(key, Map<String, bool>.from(value)));
+        //print(prayerWeekdays);
         final prayerTimes = PrayerTimes.today(
           Coordinates(latitude, longitude),
           CalculationMethod.values[calcMethod].getParameters()
@@ -79,13 +86,13 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
             ..madhab = Madhab.values[asrIndex],
         );
         final updatedData = state.prayerData.copyWith(
-          country: country,
-          state: currentState,
-          city: city,
-          latitude: latitude,
-          longitude: longitude,
-          prayerTimes: prayerTimes,
-        );
+            country: country,
+            state: currentState,
+            city: city,
+            latitude: latitude,
+            longitude: longitude,
+            prayerTimes: prayerTimes,
+            prayerWeekdays: prayerWeekdays);
 
         emit(PrayerDataUpdated(updatedData));
 
@@ -162,7 +169,13 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
   Future<void> _onPrayerAdjustments(
       PrayerTimeAdjustedEvent event, Emitter<PrayerState> emit) async {
     final PrayerTimes prayerTimes = state.prayerData.prayerTimes
-      ..calculationParameters.adjustments.fajr = event.adjustment;
+      ..calculationParameters.adjustments.fajr = event.adjustment['fajr'] ?? 0
+      ..calculationParameters.adjustments.sunrise = event.adjustment['tulu'] ?? 0
+      ..calculationParameters.adjustments.dhuhr = event.adjustment['dhuhr'] ?? 0
+      ..calculationParameters.adjustments.asr = event.adjustment['asr'] ?? 0
+      ..calculationParameters.adjustments.maghrib = event.adjustment['magrib'] ?? 0
+      ..calculationParameters.adjustments.isha = event.adjustment['isha'] ?? 0;
+
     final updatedData = state.prayerData.copyWith(
       prayerTimes: prayerTimes,
     );
@@ -195,7 +208,8 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
         data.prayerTimes.calculationParameters.adjustments.maghrib.toString());
     await _secureStorage.saveValue('isha',
         data.prayerTimes.calculationParameters.adjustments.isha.toString());
-
+    String jsonString = jsonEncode(data.prayerWeekdays);
+    await _secureStorage.saveValue('prayerWeekdays', jsonString);
     final updatedData = state.prayerData.copyWith(
       prayerTimes: PrayerTimes.today(
         Coordinates(data.latitude, data.longitude),

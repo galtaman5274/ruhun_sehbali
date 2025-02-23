@@ -78,7 +78,7 @@ class SavePrayerSettingsEvent extends PrayerEvent {
 class LoadCountriesEvent extends PrayerEvent {}
 
 class PrayerTimeAdjustedEvent extends PrayerEvent {
-  final int adjustment;
+  final  Map<String, int> adjustment;
   const PrayerTimeAdjustedEvent(this.adjustment);
 }
 class PrayerWeekDaysEvent extends PrayerEvent {

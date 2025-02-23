@@ -60,6 +60,9 @@ class _PrayerSettingsTabState extends State<PrayerSettingsTab> {
                           onPressed: () {
                             prayerAdjustments[prayer] =
                                 (prayerAdjustments[prayer]! - 1);
+                                context.read<PrayerBloc>().add(
+                                PrayerTimeAdjustedEvent(
+                                    prayerAdjustments ));
                           },
                           child: const Text('-'),
                         ),
@@ -78,7 +81,7 @@ class _PrayerSettingsTabState extends State<PrayerSettingsTab> {
                                 (prayerAdjustments[prayer]! + 1);
                             context.read<PrayerBloc>().add(
                                 PrayerTimeAdjustedEvent(
-                                    prayerAdjustments[prayer] ?? 0));
+                                    prayerAdjustments));
                           },
                           child: const Text('+'),
                         ),
@@ -94,13 +97,7 @@ class _PrayerSettingsTabState extends State<PrayerSettingsTab> {
             child: Row(
               children: [
                 ElevatedButton(
-                  onPressed: () {
-                    final updatedAdjustments = prayerAdjustments.map(
-                      (key, value) => MapEntry(key, value.toString()),
-                    );
-                    context.read<PrayerBloc>().add(SavePrayerSettingsEvent());
-                    //provider.saveAdjustments(updatedAdjustments);
-                  },
+                  onPressed: ()=> context.read<PrayerBloc>().add(SavePrayerSettingsEvent()),
                   child: const Text('Save Adjustments'),
                 ),
                 SizedBox(

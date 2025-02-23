@@ -21,8 +21,7 @@ class App extends StatelessWidget {
         providers: [
           BlocProvider(create: (_) => AyineJsonCubit(dio: Dio())..checkForAyineJson()),
           BlocProvider(
-            create: (_) =>
-                ScreenSaverBloc(),
+            create: (_) => ScreenSaverBloc(),
           ),
           BlocProvider( create: (_) => PrayerBloc()..add(InitEvent())),
           BlocProvider( create: (_) => PlaylistBloc()),

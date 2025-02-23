@@ -35,8 +35,10 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
     final storedAnimationDuration =
         await _secureStorage.getValue('animationDuration');
     final folderPath = await _secureStorage.getValue('folderPath');
-    final txt = await _secureStorage.getValue('full');
+    final txt = await _secureStorage.getValue('full') ?? 'true';
+    
     final bool isFull = txt == 'true';
+   
     final newAnimationDuration = int.tryParse(storedAnimationDuration ?? '') ??
         state.saverStateData.animationDuration;
     emit(ScreenSaverInitial(state.saverStateData));
@@ -51,7 +53,7 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
     final txt = event.screenSaverFull ? 'true' : 'false';
     await _secureStorage.saveValue('full', txt);
 
-    emit(ScreenSaverInitial(state.saverStateData));
+    //emit(ScreenSaverInitial(state.saverStateData));
     emit(ScreenSaverUpdated(
         state.saverStateData.copyWith(screenSaverFull: event.screenSaverFull)));
   }
@@ -93,7 +95,7 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
     // Cancel any existing timer.
     _inactivityTimer?.cancel();
     _imageChangeTimer?.cancel();
-    emit(ScreenSaverInitial(state.saverStateData));
+    //emit(ScreenSaverInitial(state.saverStateData));
     emit(ScreenSaverUpdated(
         state.saverStateData.copyWith(showScreenSaver: false)));
 
@@ -114,7 +116,7 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
             state.saverStateData.images.length - 1
         ? state.saverStateData.currentIndex + 1
         : 0;
-    emit(ScreenSaverInitial(state.saverStateData));
+    //emit(ScreenSaverInitial(state.saverStateData));
     emit(ScreenSaverUpdated(state.saverStateData
         .copyWith(currentIndex: nextIndex, showScreenSaver: true)));
   }
