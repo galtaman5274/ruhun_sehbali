@@ -3,7 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:ruhun_sehbali/features/hijri_calendar/hijri_calendar.dart';
 import 'package:ruhun_sehbali/features/home/provider/navigation_provider.dart';
+import 'package:ruhun_sehbali/features/home/view/components/location_widget.dart';
 import 'package:ruhun_sehbali/features/localization/localization.dart';
 
 import '../../../prayer/bloc/prayer_bloc.dart';
@@ -20,7 +23,6 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screensize = MediaQuery.sizeOf(context);
-
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -112,8 +114,7 @@ class HomePage extends StatelessWidget {
                               ),
                               borderRadius: BorderRadius.circular(1),
                               image: const DecorationImage(
-                                image:
-                                    AssetImage('assets/images/Sultanahmet.jpg'),
+                                image: AssetImage('assets/images/mecca.jpg'),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -155,12 +156,11 @@ class HomePage extends StatelessWidget {
                     width: 90,
                   ),
                   // Right side
-                  BlocBuilder<PrayerBloc, PrayerState>(
-                    builder: (context, state) {
-                      
-                      final remainingTime = state.prayerData.remainingTime;
-                      return Expanded(
-                        child: Column(
+                  Expanded(
+                    child: BlocBuilder<PrayerBloc, PrayerState>(
+                      builder: (context, state) {
+                        final remainingTime = state.prayerData.remainingTime;
+                        return Column(
                           children: [
                             const SizedBox(
                               height: 20,
@@ -265,30 +265,68 @@ class HomePage extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            // Align(
-                            //   alignment: Alignment.bottomRight,
-                            //   child: Container(
-                            //     width: 500,
-                            //     color: Colors.amber,
-                            //     child: const Row(
-                            //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            //       children: [
-                            //         LocationWidget(),
-                            //         SizedBox(
-                            //           width: 20,
-                            //         ),
-                            //         CurrentDateWidget(),
-                            //         SizedBox(
-                            //           width: 20,
-                            //         ),
-                            //       ],
-                            //     ),
-                            //   ),
-                            // ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: const Color(0xFFF0D9BC),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              width: double.infinity,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  LocationWidget(),
+                                  Text(
+                                    _formattedDateToday(context),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  FutureBuilder<String>(
+                                    future: getHijriDate(context),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData) {
+                                        return Text(
+                                          '${snapshot.data}',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 18,
+                                          ),
+                                        );
+                                      } else {
+                                        return Text('');
+                                      }
+                                    },
+                                  ),
+                                  FutureBuilder(
+                                    future: PackageInfo.fromPlatform(),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData) {
+                                        return Text(
+                                          'v${snapshot.data?.version ?? ''}',
+                                          style: TextStyle(
+                                              fontStyle: FontStyle.italic),
+                                        );
+                                      } else {
+                                        return Text('version');
+                                      }
+                                    },
+                                  )
+                                ],
+                              ),
+                            )
                           ],
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   )
                 ],
               ),
@@ -297,6 +335,32 @@ class HomePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<String> getHijriDate(context) async {
+    final hijriDate = HijriCalendarConfig.now();
+    String locale = Localizations.localeOf(context).toString();
+    List<String> supportedLocales = ['en', 'ar', 'tr'];
+    HijriCalendarConfig.setLocal(
+        supportedLocales.contains(locale) ? locale : 'en');
+    return '${hijriDate.hDay} ${hijriDate.getLongMonthName()}';
+  }
+
+  String _formattedDateToday(BuildContext context) {
+    // Get today's date
+    DateTime today = DateTime.now();
+
+    // Get the current locale
+    String locale = Localizations.localeOf(context).toString();
+
+    // Create a DateFormat instance with the current locale
+    DateFormat formatter = DateFormat('MMMM dd, yyyy', locale);
+
+    // Format the date
+    String formattedDate = formatter.format(today);
+
+    // Print the formatted date
+    return formattedDate; // Output: February 26, 2024 (or the current date)
   }
 }
 
