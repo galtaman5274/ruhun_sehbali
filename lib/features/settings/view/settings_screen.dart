@@ -123,9 +123,9 @@ class Content extends StatelessWidget {
         padding: const EdgeInsets.all(20.0),
         child: IndexedStack(
           index: currentIndex,
-          children: const [
-            PrayerSettingsTab(),
-            AppSettingsTab(),
+          children: [
+            const PrayerSettingsTab(),
+            const AppSettingsTab(),
             SetupLocation()
           ],
         ),

@@ -53,6 +53,7 @@ dependencies:
   workmanager: ^0.5.2
   package_info_plus: ^8.2.1
   open_file: ^3.5.10
+  dropdown_search: ^6.0.2
 
 
 dev_dependencies:
@@ -70,7 +71,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/images/launcher_icon.png"
+  image_path: "assets/images/logo_1.jpg"
   min_sdk_android: 21
   remove_alpha_ios: true
 
