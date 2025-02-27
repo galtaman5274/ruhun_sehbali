@@ -8,6 +8,7 @@ import 'package:ruhun_sehbali/features/hijri_calendar/hijri_calendar.dart';
 import 'package:ruhun_sehbali/features/home/provider/navigation_provider.dart';
 import 'package:ruhun_sehbali/features/home/view/components/location_widget.dart';
 import 'package:ruhun_sehbali/features/localization/localization.dart';
+
 import '../../../prayer/bloc/prayer_bloc.dart';
 import '../../../prayer/view/time_widgets.dart';
 import 'main_button.dart';
@@ -80,7 +81,7 @@ class HomePage extends StatelessWidget {
               ),
             ),
             Spacer(),
-            Container(
+            SizedBox(
               width: screensize.width * 0.83,
               // height: 600,
 

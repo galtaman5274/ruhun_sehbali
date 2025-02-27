@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ruhun_sehbali/features/localization/localization.dart';
-import 'package:ruhun_sehbali/features/settings/providers/ayine_json_cubit.dart';
 import 'package:ruhun_sehbali/features/settings/providers/locale_provider.dart';
 
 import 'dropdown_builder.dart';
@@ -23,7 +22,7 @@ class LocaleDropdown extends StatelessWidget {
       onChanged: (Locale? newLocale) {
         if (newLocale != null) {
           context.read<LocaleProvider>().setLocale(newLocale);
-          context.read<AyineJsonCubit>().saveToStorage(newLocale.languageCode);
+          //context.read<AyineJsonCubit>().saveToStorage(newLocale.languageCode);
           //final locale = context.read<LocaleProvider>().locale;
           //context.read<ContentBloc>().add(LoadContentList(locale));
         }

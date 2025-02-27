@@ -29,9 +29,9 @@ class AppSettingsTab extends StatelessWidget {
             ),
             Slider(
               value: animationDuration.toDouble(),
-              min: 1,
-              max: 60,
-              divisions: 12,
+              min: 60,
+              max: 120,
+              divisions: 4,
               label: animationDuration.toString(),
               onChanged: (value) => context
                   .read<ScreenSaverBloc>()
@@ -50,6 +50,15 @@ class AppSettingsTab extends StatelessWidget {
                   onChanged: (value) => context
                       .read<ScreenSaverBloc>()
                       .add(ScreenSaverFullEvent(value as bool))),
+            ),
+            const SizedBox(height: 20),
+            ListTile(
+              title: const Text('Turn off display untill tull'),
+              trailing: Checkbox(
+                  value: state.saverStateData.turnOffDisplay,
+                  onChanged: (value) => context
+                      .read<ScreenSaverBloc>()
+                      .add(TurnOffDisplayEvent(value as bool))),
             ),
             const SizedBox(height: 20),
             ListTile(

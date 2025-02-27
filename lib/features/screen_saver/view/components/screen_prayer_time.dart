@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 // Prayer Time Item Widget
 class ScreenPrayerTime extends StatelessWidget {
   final String prayerName;
-  final String prayerTime;
+  final DateTime prayerTime;
   final bool hasPassed;
 
   const ScreenPrayerTime({
@@ -44,7 +45,7 @@ class ScreenPrayerTime extends StatelessWidget {
             ),
             const SizedBox(height: 4.0),
             Text(
-              prayerTime,
+            DateFormat.Hm().format(prayerTime),
               style: const TextStyle(
                 fontSize: 15,
                 color: Colors.white, // Text color for better visibility
@@ -59,44 +60,44 @@ class ScreenPrayerTime extends StatelessWidget {
 
 class ScreenPrayerTimeFull extends StatelessWidget {
   final String prayerName;
-  final String prayerTime;
+  final DateTime prayerTime;
   final bool hasPassed;
-  final bool screenSaver;
 
   const ScreenPrayerTimeFull({
     super.key,
     required this.prayerName,
     required this.prayerTime,
     required this.hasPassed,
-    required this.screenSaver,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(2.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          SizedBox(height: screenSaver == true ? 5 : 10),
+          SizedBox(width: 10),
           Text(
-            prayerName.toUpperCase(),
+            '${prayerName.toUpperCase()}: ',
             style: TextStyle(
-              fontSize: screenSaver == true ? 12 : 20,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
               color: hasPassed
                   ? const Color.fromARGB(255, 80, 237, 23)
                   : const Color.fromARGB(
-                      255, 6, 6, 6), // Optional: Change text color
+                      255, 240, 236, 236), // Optional: Change text color
             ),
           ),
-          const SizedBox(height: 4.0),
+          const SizedBox(width: 4.0),
           Text(
-            prayerTime,
+            DateFormat.Hm().format(prayerTime),
             style: TextStyle(
-              fontSize: screenSaver == true ? 10 : 17,
-              color: Colors.black, // Text color for better visibility
+              fontSize: 10,
+              color: const Color.fromARGB(
+                  255, 244, 243, 243), // Text color for better visibility
             ),
           ),
         ],

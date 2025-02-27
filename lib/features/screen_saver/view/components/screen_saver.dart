@@ -1,64 +1,174 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ruhun_sehbali/features/localization/localization.dart';
+import 'package:ruhun_sehbali/features/prayer/bloc/prayer_bloc.dart';
 import 'package:ruhun_sehbali/features/screen_saver/bloc/screen_saver.dart';
+import 'package:ruhun_sehbali/features/screen_saver/view/components/screen_prayer_time.dart';
 import 'image_animation.dart';
 
 class ScreenSaverFull extends StatelessWidget {
   final ScreenSaverStateData saverStateData;
-  const ScreenSaverFull({super.key,required this.saverStateData});
+  const ScreenSaverFull({super.key, required this.saverStateData});
 
   @override
   Widget build(BuildContext context) {
+    bool isMidnight() {
+  DateTime now = DateTime.now();
+  return now.hour == 0 && now.minute == 0;
+}
     return Column(
       children: [
         Expanded(
           child: Container(
             color: Colors.black,
-            child:  ImageAnimation(image: saverStateData.images[saverStateData.currentIndex],),
+            child: ImageAnimation(
+              image:saverStateData.turnOffDisplay && isMidnight() ? Image(image: AssetImage('assets/images/sleep.jpg')) : saverStateData.images[saverStateData.currentIndex],
+            ),
           ),
         ),
-       //const ScreenSaverPrayerTimesFull(),
+        Container(
+          color: Colors.black,
+          child:
+              BlocBuilder<PrayerBloc, PrayerState>(builder: (context, state) {
+            final prayerData = state.prayerData;
+            return Row(
+              children: [
+                Text(
+                  prayerData.currentDate,
+                  style: TextStyle(color: Colors.white),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  prayerData.currentTime,
+                  style: TextStyle(color: Colors.white),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  context.l10n.timeLeftText,
+                  style: TextStyle(color: Colors.white),
+                ),
+                Text(
+                  prayerData.remainingTime,
+                  style: TextStyle(color: Colors.white),
+                ),
+                ScreenPrayerTimeFull(
+                    prayerName: context.l10n.prayerFajr,
+                    prayerTime: prayerData.prayerTimes.fajr,
+                    hasPassed: prayerData.prayerPassed[0]),
+                ScreenPrayerTimeFull(
+                    prayerName: context.l10n.prayerTulu,
+                    prayerTime: prayerData.prayerTimes.sunrise,
+                    hasPassed: prayerData.prayerPassed[1]),
+                ScreenPrayerTimeFull(
+                    prayerName: context.l10n.prayerDhuhr,
+                    prayerTime: prayerData.prayerTimes.dhuhr,
+                    hasPassed: prayerData.prayerPassed[2]),
+                ScreenPrayerTimeFull(
+                    prayerName: context.l10n.prayerMaghrib,
+                    prayerTime: prayerData.prayerTimes.maghrib,
+                    hasPassed: prayerData.prayerPassed[3]),
+                ScreenPrayerTimeFull(
+                    prayerName: context.l10n.prayerIsha,
+                    prayerTime: prayerData.prayerTimes.isha,
+                    hasPassed: prayerData.prayerPassed[4]),
+              ],
+            );
+          }),
+        )
+        //const ScreenSaverPrayerTimesFull(),
       ],
     );
   }
 }
 
 class ScreenSaverMini extends StatelessWidget {
-    final ScreenSaverStateData saverStateData;
+  final ScreenSaverStateData saverStateData;
 
-  const ScreenSaverMini({super.key,required this.saverStateData});
+  const ScreenSaverMini({super.key, required this.saverStateData});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.amber,
+      color: const Color.fromARGB(255, 246, 246, 245),
       child: Column(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  color: Colors.black,
-                  child:  ImageAnimation(image: saverStateData.images[saverStateData.currentIndex],),
-                ),
-              ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 2, 60, 107),
-                      borderRadius: BorderRadius.circular(40),
-                    ),
-                    width: 174,
-                    child: const Column(
-                      //children: [CurrentTimeWidget(), TimeLeftWidget()],
-                    ),
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(
+                  child: ImageAnimation(
+                    image: saverStateData.images[saverStateData.currentIndex],
                   ),
-                ],
-              )
-            ],
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    BlocBuilder<PrayerBloc, PrayerState>(
+                        builder: (context, state) {
+                      final prayerData = state.prayerData;
+                      return Column(
+                        children: [
+                          Text(
+                            prayerData.currentDate,
+                            style: TextStyle(color: Colors.black),
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text(
+                            prayerData.currentTime,
+                            style: TextStyle(color: Colors.black),
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text(
+                            context.l10n.timeLeftText,
+                            style: TextStyle(color: Colors.black),
+                          ),
+                          Text(
+                            prayerData.remainingTime,
+                            style: TextStyle(color: Colors.black),
+                          ),
+                          ScreenPrayerTime(
+                              prayerName: context.l10n.prayerFajr,
+                              prayerTime: prayerData.prayerTimes.fajr,
+                              hasPassed: prayerData.prayerPassed[0]),
+                          ScreenPrayerTime(
+                              prayerName: context.l10n.prayerTulu,
+                              prayerTime: prayerData.prayerTimes.sunrise,
+                              hasPassed: prayerData.prayerPassed[1]),
+                        ],
+                      );
+                    }),
+                  ],
+                )
+              ],
+            ),
           ),
-          //const ScreenSaverPrayerTimes(),
+          BlocBuilder<PrayerBloc, PrayerState>(builder: (context, state) {
+            final prayerData = state.prayerData;
+            return Row(
+              children: [
+                ScreenPrayerTime(
+                    prayerName: context.l10n.prayerDhuhr,
+                    prayerTime: prayerData.prayerTimes.dhuhr,
+                    hasPassed: prayerData.prayerPassed[2]),
+                ScreenPrayerTime(
+                    prayerName: context.l10n.prayerMaghrib,
+                    prayerTime: prayerData.prayerTimes.maghrib,
+                    hasPassed: prayerData.prayerPassed[3]),
+                ScreenPrayerTime(
+                    prayerName: context.l10n.prayerIsha,
+                    prayerTime: prayerData.prayerTimes.isha,
+                    hasPassed: prayerData.prayerPassed[4]),
+              ],
+            );
+          }),
         ],
       ),
     );

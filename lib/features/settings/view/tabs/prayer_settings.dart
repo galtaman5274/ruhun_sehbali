@@ -44,51 +44,34 @@ class _PrayerSettingsTabState extends State<PrayerSettingsTab> {
           ),
           const SizedBox(height: 20),
           Column(
-            children: prayerAdjustments.keys.map((prayer) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    prayerAdjustmentsLocalization[prayer]!.toUpperCase(),
-                    style: const TextStyle(fontSize: 16),
+            children: prayerAdjustmentsLocalization.keys.map((prayer) {
+              return ListTile(
+                title: Text(
+                  prayerAdjustmentsLocalization[prayer]?.toUpperCase() ?? 'Prayer',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                trailing: IconButton(
+                  onPressed: () => showModalBottomSheet(
+                    context: this.context,
+                    isScrollControlled:
+                        true, // Allow the modal to take up most of the screen
+                    builder: (context) {
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).viewInsets.bottom,
+                        ),
+                        child: PrayerTimeModal(
+                          prayerAdjustment: prayerAdjustments[prayer] ?? 0,
+                          prayerName: prayer,
+                          prayerNameLocalized:
+                              prayerAdjustmentsLocalization[prayer] ?? '',
+                              prayerTimes: state.prayerData.prayerWeekdays[prayer] ?? {},
+                        ),
+                      );
+                    },
                   ),
-                  SizedBox(
-                    width: 180,
-                    child: Row(
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            prayerAdjustments[prayer] =
-                                (prayerAdjustments[prayer]! - 1);
-                                context.read<PrayerBloc>().add(
-                                PrayerTimeAdjustedEvent(
-                                    prayerAdjustments ));
-                          },
-                          child: const Text('-'),
-                        ),
-                        Expanded(
-                          child: TextField(
-                            readOnly: true,
-                            textAlign: TextAlign.center,
-                            decoration: InputDecoration(
-                              hintText: prayerAdjustments[prayer].toString(),
-                            ),
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            prayerAdjustments[prayer] =
-                                (prayerAdjustments[prayer]! + 1);
-                            context.read<PrayerBloc>().add(
-                                PrayerTimeAdjustedEvent(
-                                    prayerAdjustments));
-                          },
-                          child: const Text('+'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                  icon: Icon(Icons.edit),
+                ),
               );
             }).toList(),
           ),
@@ -97,43 +80,18 @@ class _PrayerSettingsTabState extends State<PrayerSettingsTab> {
             child: Row(
               children: [
                 ElevatedButton(
-                  onPressed: ()=> context.read<PrayerBloc>().add(SavePrayerSettingsEvent()),
+                  onPressed: () =>
+                      context.read<PrayerBloc>().add(SavePrayerSettingsEvent()),
                   child: const Text('Save Adjustments'),
                 ),
                 SizedBox(
                   width: 50,
-                ),
-                ElevatedButton(
-                  onPressed: () => _showPrayerTimeModal(
-                      context, state.prayerData.prayerWeekdays),
-                  child: const Text('Update week days'),
                 ),
               ],
             ),
           ),
         ],
       );
-    });
-  }
-
-  void _showPrayerTimeModal(
-      BuildContext context, Map<String, Map<String, bool>> initialData) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true, // Allow the modal to take up most of the screen
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: PrayerTimeModal(initialData: initialData),
-        );
-      },
-    ).then((updatedData) {
-      if (updatedData != null) {
-        if (mounted)   {
-          context.read<PrayerBloc>().add(PrayerWeekDaysEvent(updatedData));}
-      }
     });
   }
 }

@@ -20,6 +20,7 @@ class ScreenSaverStateData extends Equatable {
   
   final String currentScreen;
   final bool showScreenSaver;
+  final bool turnOffDisplay;
   final int
       animationDuration; // The time to show each image or run an animation
   final int inactivityTime; // Time before screensaver kicks in
@@ -41,16 +42,17 @@ class ScreenSaverStateData extends Equatable {
       required this.screenSaverFull,
       required this.imgUrl,
       required this.personalImagePath,
-
+      required this.turnOffDisplay
       });
 
   // Initial State
   factory ScreenSaverStateData.initial() {
     return const ScreenSaverStateData(
         currentScreen: 'home',
+        turnOffDisplay: false,
         showScreenSaver: false,
-        animationDuration: 2,
-        inactivityTime: 15,
+        animationDuration: 30,
+        inactivityTime: 30,
         images: [
           Image(
             image: AssetImage('assets/screen_savers/tr/1-allah.jpg'),
@@ -82,6 +84,7 @@ class ScreenSaverStateData extends Equatable {
       bool? screenSaverFull,
       String? imgUrl,
       String? personalImagePath,
+      bool? turnOffDisplay
       }) {
     return ScreenSaverStateData(
         currentScreen: currentScreen ?? this.currentScreen,
@@ -94,6 +97,7 @@ class ScreenSaverStateData extends Equatable {
         screenSaverFull: screenSaverFull ?? this.screenSaverFull,
         imgUrl: imgUrl ?? this.imgUrl,
         personalImagePath: personalImagePath ?? this.personalImagePath,
+        turnOffDisplay: turnOffDisplay ?? this.turnOffDisplay
         
         );
   }
@@ -110,6 +114,6 @@ class ScreenSaverStateData extends Equatable {
         screenSaverFull,
         imgUrl,
         personalImagePath,
-
+        turnOffDisplay
       ];
 }

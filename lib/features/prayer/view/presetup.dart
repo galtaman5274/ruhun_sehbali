@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ruhun_sehbali/features/settings/view/components/locale_dropdown.dart';
 import 'package:ruhun_sehbali/features/settings/view/tabs/location_settings.dart';
 
 class PrayerSetupPage extends StatelessWidget {
@@ -6,16 +7,18 @@ class PrayerSetupPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Setup Prayer Times'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SetupLocation()
-      ),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              LocaleDropdown(),
+              SetupLocation(),
+            ],
+          )),
     );
   }
- 
 }
