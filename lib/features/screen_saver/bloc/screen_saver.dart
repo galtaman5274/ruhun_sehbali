@@ -4,7 +4,6 @@ import 'package:equatable/equatable.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../storage_controller/storage_controller.dart';
 
 part 'event.dart';
@@ -28,7 +27,7 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
     on<ScreenSaverFullEvent>(_onScreenSaverFull);
     on<LoadImagesFolder>(_loadImagesFromFolder);
     on<PickFolderEvent>(_pickFolder);
-
+    on<TurnOffDisplayEvent>(_onTurnOffDisplay);
     add(Init());
   }
   void _onInit(Init event, Emitter<ScreenSaverState> emit) async {
@@ -36,16 +35,18 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
         await _secureStorage.getValue('animationDuration');
     final folderPath = await _secureStorage.getValue('folderPath');
     final txt = await _secureStorage.getValue('full') ?? 'true';
-    
     final bool isFull = txt == 'true';
-   
+final display = await _secureStorage.getValue('displayOff') ?? 'true';
+    final bool displayOff = display == 'true';
     final newAnimationDuration = int.tryParse(storedAnimationDuration ?? '') ??
         state.saverStateData.animationDuration;
-    emit(ScreenSaverInitial(state.saverStateData));
+    //emit(ScreenSaverInitial(state.saverStateData));
     emit(ScreenSaverUpdated(state.saverStateData.copyWith(
         animationDuration: newAnimationDuration,
         personalImagePath: folderPath,
-        screenSaverFull: isFull)));
+        screenSaverFull: isFull,
+        inactivityTime: newAnimationDuration,
+        turnOffDisplay: displayOff)));
   }
 
   void _onScreenSaverFull(
@@ -58,9 +59,19 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
         state.saverStateData.copyWith(screenSaverFull: event.screenSaverFull)));
   }
 
+  void _onTurnOffDisplay(
+      TurnOffDisplayEvent event, Emitter<ScreenSaverState> emit) async {
+    final txt = event.turnOffdisplay ? 'true' : 'false';
+    await _secureStorage.saveValue('displayOff', txt);
+
+    //emit(ScreenSaverInitial(state.saverStateData));
+    emit(ScreenSaverUpdated(
+        state.saverStateData.copyWith(turnOffDisplay: event.turnOffdisplay)));
+  }
+
   void _onUsePersonalImagesFull(
       SetImagesUrlEvent event, Emitter<ScreenSaverState> emit) async {
-    emit(ScreenSaverInitial(state.saverStateData));
+    //emit(ScreenSaverInitial(state.saverStateData));
     emit(ScreenSaverUpdated(
         state.saverStateData.copyWith(imgUrl: event.imgUrl)));
   }
@@ -69,7 +80,7 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
       SetAnimationDurationEvent event, Emitter<ScreenSaverState> emit) async {
     await _secureStorage.saveValue(
         'animationDuration', event.animationDuration.toString());
-    emit(ScreenSaverInitial(state.saverStateData));
+    //emit(ScreenSaverInitial(state.saverStateData));
     emit(ScreenSaverUpdated(state.saverStateData
         .copyWith(animationDuration: event.animationDuration)));
 
@@ -85,7 +96,7 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
         fit: BoxFit.cover,
       );
     }).toList();
-    emit(ScreenSaverInitial(state.saverStateData));
+    //emit(ScreenSaverInitial(state.saverStateData));
     emit(ScreenSaverUpdated(
         state.saverStateData.copyWith(images: imageWidgets)));
   }
@@ -158,10 +169,10 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
               file.path.endsWith('.jpg') || file.path.endsWith('.png'))
           .map((file) => Image.file(File(file.path)))
           .toList();
-      emit(ScreenSaverInitial(state.saverStateData));
+      //emit(ScreenSaverInitial(state.saverStateData));
       emit(ScreenSaverUpdated(state.saverStateData.copyWith(images: images)));
     } else {
-      emit(ScreenSaverInitial(state.saverStateData));
+      //emit(ScreenSaverInitial(state.saverStateData));
       emit(ScreenSaverUpdated(state.saverStateData));
     }
   }

@@ -32,11 +32,12 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
       'https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=view',
       options: Options(responseType: ResponseType.json),
     );
-    
+
     await checkUpdate(response.data);
     log('<><><><><><> response status: ${response.statusCode}');
     log('<><><><><><> response data: ${response.data['UpdateApk']}');
   }
+
   Future<void> checkForAyineJson() async {
     emit(AyineJsonInitial());
     try {
@@ -99,11 +100,11 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
             Directory('${appDocDir.path}/screen_savers/$locale');
         if (!directory.existsSync()) {
           directory.createSync(recursive: true);
-          for (final imageUrl in images) {
-            final uri = Uri.parse(imageUrl);
+          for (var i = 0; i < images.length; i++) {
+            final uri = Uri.parse(images[i]);
 
             final response = await _dio.get(
-              imageUrl,
+              images[i],
               options: Options(responseType: ResponseType.bytes),
             );
 
@@ -117,21 +118,31 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
               // Optionally save to local in your ScreenSaver model
               screenSaver.saveToLocal(file.absolute.path, locale);
 
+              if (i % 10 == 0) {
+                emit(AyineJsonInitial());
+                emit(AyineJsonLoadedStorage(
+                  alert: currentState.alert,
+                  azanFiles: currentState.azanFiles,
+                  quran: currentState.quran,
+                  screenSaver: screenSaver,
+                ));
+              }
               print('File saved: ${file.absolute.path}');
             } else {
               print(
-                  'Failed to download $imageUrl. Status code: ${response.statusCode}');
+                  'Failed to download ${images[i]}. Status code: ${response.statusCode}');
             }
           }
         } else {
           final List<FileSystemEntity> files = directory.listSync();
-          files.forEach(
-              (file) => screenSaver.saveToLocal(file.absolute.path, locale));
+          for (var file in files) {
+            screenSaver.saveToLocal(file.absolute.path, locale);
+          }
 
           if (screenSaver.getLocalImages(locale).length != images.length) {
-            directory
-                .delete(recursive: true)
-                .then((_) => directory.createSync(recursive: true));
+            // directory
+            //     .delete(recursive: true)
+            //     .then((_) => directory.createSync(recursive: true));
             screenSaver.getLocalImages(locale).clear();
             for (final imageUrl in images) {
               final uri = Uri.parse(imageUrl);
@@ -164,10 +175,11 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
           screenSaver: screenSaver,
         ));
       } catch (e) {
-        emit(AyineJsonError(message: 'Error downloading images: $e'));
+        // emit(AyineJsonError(message: 'Error downloading images: $e'));
+        print(e);
       }
     } else {
-      checkForAyineJson().then((_)=>saveToStorage(locale));
+      checkForAyineJson().then((_) => saveToStorage(locale));
       //emit(AyineJsonError(message: 'Content must be downloaded first.'));
     }
   }

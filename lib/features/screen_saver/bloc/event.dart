@@ -43,11 +43,14 @@ class ScreenSaverFullEvent extends ScreenSaverEvent {
   final bool screenSaverFull;
   const ScreenSaverFullEvent(this.screenSaverFull);
 }
-
+class TurnOffDisplayEvent extends ScreenSaverEvent {
+  final bool turnOffdisplay;
+  const TurnOffDisplayEvent(this.turnOffdisplay);
+}
 class PickFolderEvent
     extends ScreenSaverEvent {} // New event for selecting a folder
 
 class LoadImagesFolder extends ScreenSaverEvent {
   final String folderPath;
-  LoadImagesFolder(this.folderPath);
+  const LoadImagesFolder(this.folderPath);
 } // New event for selecting a folder

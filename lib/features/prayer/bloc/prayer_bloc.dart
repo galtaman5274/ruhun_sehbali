@@ -168,19 +168,71 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
 
   Future<void> _onPrayerAdjustments(
       PrayerTimeAdjustedEvent event, Emitter<PrayerState> emit) async {
-    final PrayerTimes prayerTimes = state.prayerData.prayerTimes
-      ..calculationParameters.adjustments.fajr = event.adjustment['fajr'] ?? 0
-      ..calculationParameters.adjustments.sunrise = event.adjustment['tulu'] ?? 0
-      ..calculationParameters.adjustments.dhuhr = event.adjustment['dhuhr'] ?? 0
-      ..calculationParameters.adjustments.asr = event.adjustment['asr'] ?? 0
-      ..calculationParameters.adjustments.maghrib = event.adjustment['magrib'] ?? 0
-      ..calculationParameters.adjustments.isha = event.adjustment['isha'] ?? 0;
+        
+    switch (event.prayerName) {
+      case 'fajr':
+        final prayerTimes = PrayerTimes.today(
+          Coordinates(state.prayerData.latitude, state.prayerData.longitude),
+          state.prayerData.calculationMethod.getParameters()
+            ..adjustments.fajr = event.adjustment
+            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],);
+        final updatedData = state.prayerData.copyWith(
+          prayerTimes: prayerTimes,
+        );
 
-    final updatedData = state.prayerData.copyWith(
-      prayerTimes: prayerTimes,
-    );
-
-    emit(PrayerDataUpdated(updatedData));
+        emit(PrayerDataUpdated(updatedData));
+      case 'tulu':
+         final prayerTimes = PrayerTimes.today(
+          Coordinates(state.prayerData.latitude, state.prayerData.longitude),
+          state.prayerData.calculationMethod.getParameters()
+            ..adjustments.sunrise = event.adjustment
+            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],);
+        final updatedData = state.prayerData.copyWith(
+          prayerTimes: prayerTimes,
+        );
+        emit(PrayerDataUpdated(updatedData));
+      case 'dhuhr':
+        final prayerTimes = PrayerTimes.today(
+          Coordinates(state.prayerData.latitude, state.prayerData.longitude),
+          state.prayerData.calculationMethod.getParameters()
+            ..adjustments.dhuhr = event.adjustment
+            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],);
+        final updatedData = state.prayerData.copyWith(
+          prayerTimes: prayerTimes,
+        );
+        emit(PrayerDataUpdated(updatedData));
+      case 'asr':
+         final prayerTimes = PrayerTimes.today(
+          Coordinates(state.prayerData.latitude, state.prayerData.longitude),
+          state.prayerData.calculationMethod.getParameters()
+            ..adjustments.asr = event.adjustment
+            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],);
+        final updatedData = state.prayerData.copyWith(
+          prayerTimes: prayerTimes,
+        );
+        emit(PrayerDataUpdated(updatedData));
+      case 'magrib':
+        final prayerTimes = PrayerTimes.today(
+          Coordinates(state.prayerData.latitude, state.prayerData.longitude),
+          state.prayerData.calculationMethod.getParameters()
+            ..adjustments.maghrib = event.adjustment
+            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],);
+        final updatedData = state.prayerData.copyWith(
+          prayerTimes: prayerTimes,
+        );
+        emit(PrayerDataUpdated(updatedData));
+      case 'isha':
+         final prayerTimes = PrayerTimes.today(
+          Coordinates(state.prayerData.latitude, state.prayerData.longitude),
+          state.prayerData.calculationMethod.getParameters()
+            ..adjustments.isha = event.adjustment
+            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],);
+        final updatedData = state.prayerData.copyWith(
+          prayerTimes: prayerTimes,
+        );
+        emit(PrayerDataUpdated(updatedData));
+    }
+    _secureStorage.saveValue(event.prayerName, event.adjustment.toString());
   }
 
   /// **Save prayer settings to local storage**
@@ -369,7 +421,8 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
 
   void _onPraterWeedDaysUpdatd(
       PrayerWeekDaysEvent event, Emitter<PrayerState> emit) {
-    emit(PrayerDataUpdated(
-        state.prayerData.copyWith(prayerWeekdays: event.adjustment)));
+    final weekDay = state.prayerData.prayerWeekdays;
+    weekDay[event.prayer] = event.weekDayAdjustment;
+    emit(PrayerDataUpdated(state.prayerData.copyWith(prayerWeekdays: weekDay)));
   }
 }

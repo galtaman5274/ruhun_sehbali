@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:ruhun_sehbali/features/home/provider/navigation_provider.dart';
 import 'package:ruhun_sehbali/features/localization/localization.dart';
-import 'package:ruhun_sehbali/main.dart';
 
 import '../../../prayer/bloc/prayer_bloc.dart';
 import '../../../prayer/view/time_widgets.dart';
@@ -80,7 +79,7 @@ class HomePage extends StatelessWidget {
               ),
             ),
             Spacer(),
-            Container(
+            SizedBox(
               width: screensize.width * 0.83,
               // height: 600,
 
@@ -158,6 +157,7 @@ class HomePage extends StatelessWidget {
                   // Right side
                   BlocBuilder<PrayerBloc, PrayerState>(
                     builder: (context, state) {
+                      
                       final remainingTime = state.prayerData.remainingTime;
                       return Expanded(
                         child: Column(
