@@ -266,7 +266,7 @@ class HomePage extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(
-                              height: 20,
+                              height: 30,
                             ),
                             Container(
                               decoration: BoxDecoration(
@@ -306,21 +306,29 @@ class HomePage extends StatelessWidget {
                                       }
                                     },
                                   ),
-                                  FutureBuilder(
-                                    future: PackageInfo.fromPlatform(),
-                                    builder: (context, snapshot) {
-                                      if (snapshot.hasData) {
-                                        return Text(
-                                          'v${snapshot.data?.version ?? ''}',
-                                          style: TextStyle(
-                                              fontStyle: FontStyle.italic),
-                                        );
-                                      } else {
-                                        return Text('version');
-                                      }
-                                    },
-                                  )
                                 ],
+                              ),
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: FutureBuilder(
+                                future: PackageInfo.fromPlatform(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    return Text(
+                                      'v${snapshot.data?.version ?? ''}',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.white54,
+                                      ),
+                                    );
+                                  } else {
+                                    return Text('version');
+                                  }
+                                },
                               ),
                             )
                           ],

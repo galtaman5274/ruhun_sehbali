@@ -20,22 +20,33 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
   })  : _dio = dio,
         dataSource = DataSource(dio),
         super(AyineJsonInitial()) {
-    getAyineJson();
+    // getAyineJson();
   }
-  Future<void> getAyineJson() async {
-    final checkResponse = await _dio.get(
-      'https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=scan',
-    );
-    log('<><><><><><> scan response status: ${checkResponse.statusCode}');
+  Future<Map<String, dynamic>?> getAyineJson() async {
+    try {
+      final checkResponse = await _dio.get(
+        'https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=scan',
+      );
+      log('<><><><><><> scan response status: ${checkResponse.statusCode}');
 
-    final response = await _dio.get(
-      'https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=view',
-      options: Options(responseType: ResponseType.json),
-    );
+      final response = await _dio.get(
+        'https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=view',
+        options: Options(responseType: ResponseType.json),
+      );
 
-    await checkUpdate(response.data);
-    log('<><><><><><> response status: ${response.statusCode}');
-    log('<><><><><><> response data: ${response.data['UpdateApk']}');
+      log('<><><><><><> response status: ${response.statusCode}');
+      log('<><><><><><> response data: ${response.data['UpdateApk']}');
+
+      if (response.statusCode == 200) {
+        return response.data;
+      } else {
+        return null;
+      }
+
+      // await checkUpdate(response.data);
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<void> checkForAyineJson() async {
@@ -247,9 +258,11 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
   }
 
   Future<void> checkUpdate(Map<String, dynamic> json) async {
+    final dataSource = DataSource(Dio());
     try {
       final newVersion = (json['UpdateApk'] as Map).entries.last.key;
-      await DataSource(Dio()).checkVersion(newVersion);
+      final result = await dataSource.checkVersion(newVersion);
+      if (result > 0) await dataSource.downloadAndInstallApk(newVersion);
       // String? version = await _secureStorage.getValue('version');
       // log('stored version : $version');
       // if (version != null) {

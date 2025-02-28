@@ -12,22 +12,32 @@ class ScreenSaverFull extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final greenTextStyle = TextStyle(
+      color: const Color.fromARGB(255, 80, 237, 23),
+      fontSize: 16,
+    );
     bool isMidnight() {
-  DateTime now = DateTime.now();
-  return now.hour == 0 && now.minute == 0;
-}
+      DateTime now = DateTime.now();
+      return now.hour == 0 && now.minute == 0;
+    }
+
     return Column(
       children: [
         Expanded(
           child: Container(
+            width: MediaQuery.sizeOf(context).width,
             color: Colors.black,
             child: ImageAnimation(
-              image:saverStateData.turnOffDisplay && isMidnight() ? Image(image: AssetImage('assets/images/sleep.jpg')) : saverStateData.images[saverStateData.currentIndex],
+              image: saverStateData.turnOffDisplay && isMidnight()
+                  ? Image(image: AssetImage('assets/images/sleep.jpg'))
+                  : saverStateData.images[saverStateData.currentIndex],
             ),
           ),
         ),
         Container(
-          color: Colors.black,
+          padding: EdgeInsets.only(left: 10, right: 20),
+          height: 40,
+          color: const Color.fromARGB(255, 42, 42, 42),
           child:
               BlocBuilder<PrayerBloc, PrayerState>(builder: (context, state) {
             final prayerData = state.prayerData;
@@ -35,42 +45,53 @@ class ScreenSaverFull extends StatelessWidget {
               children: [
                 Text(
                   prayerData.currentDate,
-                  style: TextStyle(color: Colors.white),
+                  style: greenTextStyle,
                 ),
                 SizedBox(
-                  height: 10,
+                  width: 10,
                 ),
                 Text(
                   prayerData.currentTime,
-                  style: TextStyle(color: Colors.white),
+                  style: greenTextStyle,
                 ),
                 SizedBox(
-                  height: 10,
+                  width: 20,
                 ),
                 Text(
                   context.l10n.timeLeftText,
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
                 ),
                 Text(
                   prayerData.remainingTime,
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
                 ),
+                Spacer(),
                 ScreenPrayerTimeFull(
                     prayerName: context.l10n.prayerFajr,
                     prayerTime: prayerData.prayerTimes.fajr,
                     hasPassed: prayerData.prayerPassed[0]),
+                Spacer(),
                 ScreenPrayerTimeFull(
                     prayerName: context.l10n.prayerTulu,
                     prayerTime: prayerData.prayerTimes.sunrise,
                     hasPassed: prayerData.prayerPassed[1]),
+                Spacer(),
                 ScreenPrayerTimeFull(
                     prayerName: context.l10n.prayerDhuhr,
                     prayerTime: prayerData.prayerTimes.dhuhr,
                     hasPassed: prayerData.prayerPassed[2]),
+                Spacer(),
                 ScreenPrayerTimeFull(
                     prayerName: context.l10n.prayerMaghrib,
                     prayerTime: prayerData.prayerTimes.maghrib,
                     hasPassed: prayerData.prayerPassed[3]),
+                Spacer(),
                 ScreenPrayerTimeFull(
                     prayerName: context.l10n.prayerIsha,
                     prayerTime: prayerData.prayerTimes.isha,

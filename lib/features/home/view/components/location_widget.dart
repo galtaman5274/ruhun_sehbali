@@ -9,8 +9,14 @@ class LocationWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<PrayerBloc, PrayerState>(
       builder: (context, state) {
+        String? countryName = state.prayerData.countries
+                .any((country) => country.isoCode == state.prayerData.country)
+            ? state.prayerData.countries
+                .firstWhere((e) => e.isoCode == state.prayerData.country)
+                .name
+            : null;
         return Text(
-          '${state.prayerData.country}/${state.prayerData.city}',
+          '${countryName?.toUpperCase() ?? state.prayerData.country}/${state.prayerData.city}',
           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
         );
       },
