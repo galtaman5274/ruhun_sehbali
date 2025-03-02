@@ -11,14 +11,16 @@ class PrayerSetupPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Setup Prayer Times'),
       ),
-      body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              LocaleDropdown(),
-              SetupLocation(),
-            ],
-          )),
+      body: SingleChildScrollView(
+        child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                LocaleDropdown(),
+                SetupLocation(),
+              ],
+            )),
+      ),
     );
   }
 }

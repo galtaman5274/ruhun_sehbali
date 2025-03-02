@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:adhan/adhan.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
@@ -36,16 +34,6 @@ class SetupLocation extends StatelessWidget {
     return BlocBuilder<PrayerBloc, PrayerState>(
       builder: (context, state) {
         final prayerData = state.prayerData;
-        log('>>>>>>>>>>> countries length - ${prayerData.countries.length}');
-        log('>>>>>>>>>>> country - ${prayerData.country}');
-        String? yurtAdy = prayerData.countries
-                .any((country) => country.isoCode == prayerData.country)
-            ? prayerData.countries
-                .firstWhere((e) => e.isoCode == prayerData.country)
-                .name
-            : null;
-        log('>>>>>>>>>>> country name - $yurtAdy');
-
         return SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

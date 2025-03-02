@@ -77,12 +77,11 @@ class DataSource {
     }
   }
 
-  Future<void> checkVersion(String version1) async {
+  Future<int> checkVersion(String version1) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String version2 = packageInfo.version;
-
     int result = compareVersion(version1, version2);
-    if (result > 0) await downloadAndInstallApk(version1);
+    return result;
   }
 
   int compareVersion(String version1, String version2) {

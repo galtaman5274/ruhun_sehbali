@@ -45,7 +45,7 @@ class ScreenPrayerTime extends StatelessWidget {
             ),
             const SizedBox(height: 4.0),
             Text(
-            DateFormat.Hm().format(prayerTime),
+              DateFormat.Hm().format(prayerTime),
               style: const TextStyle(
                 fontSize: 15,
                 color: Colors.white, // Text color for better visibility
@@ -83,10 +83,11 @@ class ScreenPrayerTimeFull extends StatelessWidget {
           Text(
             '${prayerName.toUpperCase()}: ',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: hasPassed
-                  ? const Color.fromARGB(255, 80, 237, 23)
+                  // ? const Color.fromARGB(255, 80, 237, 23)
+                  ? const Color.fromARGB(50, 240, 236, 236)
                   : const Color.fromARGB(
                       255, 240, 236, 236), // Optional: Change text color
             ),
@@ -95,9 +96,11 @@ class ScreenPrayerTimeFull extends StatelessWidget {
           Text(
             DateFormat.Hm().format(prayerTime),
             style: TextStyle(
-              fontSize: 10,
-              color: const Color.fromARGB(
-                  255, 244, 243, 243), // Text color for better visibility
+              fontSize: 16,
+              color: hasPassed
+                  ? const Color.fromARGB(50, 240, 236, 236)
+                  : const Color.fromARGB(
+                      255, 244, 243, 243), // Text color for better visibility
             ),
           ),
         ],
