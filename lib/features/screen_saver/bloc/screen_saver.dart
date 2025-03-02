@@ -36,10 +36,11 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
     final folderPath = await _secureStorage.getValue('folderPath');
     final txt = await _secureStorage.getValue('full') ?? 'true';
     final bool isFull = txt == 'true';
-final display = await _secureStorage.getValue('displayOff') ?? 'true';
+    final display = await _secureStorage.getValue('displayOff') ?? 'true';
     final bool displayOff = display == 'true';
-    final newAnimationDuration = int.tryParse(storedAnimationDuration ?? '') ??
-        state.saverStateData.animationDuration;
+    final newAnimationDuration =
+        int.tryParse(storedAnimationDuration ?? '30') ??
+            state.saverStateData.animationDuration;
     //emit(ScreenSaverInitial(state.saverStateData));
     emit(ScreenSaverUpdated(state.saverStateData.copyWith(
         animationDuration: newAnimationDuration,
@@ -137,6 +138,7 @@ final display = await _secureStorage.getValue('displayOff') ?? 'true';
     _imageChangeTimer?.cancel();
     // We'll run this every (animationDuration + some offset) seconds
     // so that the UI can perform the transition in between.
+   
     _imageChangeTimer = Timer.periodic(
       Duration(seconds: state.saverStateData.animationDuration + 2),
       (timer) {

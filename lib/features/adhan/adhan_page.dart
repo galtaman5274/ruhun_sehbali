@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:ruhun_sehbali/features/home/provider/navigation_provider.dart';
-import 'package:video_player/video_player.dart';
 
 class AdhanPage extends StatefulWidget {
   const AdhanPage({super.key});

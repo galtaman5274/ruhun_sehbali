@@ -118,8 +118,7 @@ class ScreenSaverMini extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PrayerBloc, PrayerState>(builder: (context, state) {
-      final prayerData = state.prayerData;
+     
       return Stack(
         children: [
           Image.asset(
@@ -165,98 +164,106 @@ class ScreenSaverMini extends StatelessWidget {
               width: 200,
             ),
           ),
-          Positioned(
-            right: 40,
-            bottom: 60,
-            child: SizedBox(
-              width: 100,
-              child: Text(
-                prayerData.currentDate,
-                style: TextStyle(color: Colors.black, fontSize: 25),
-              ),
-            ),
-          ),
-          Positioned(
-            right: 60,
-            top: 130,
-            child: Text(
-              prayerData.currentTime,
-              style: TextStyle(color: Colors.black, fontSize: 35),
-            ),
-          ),
-          Positioned(
-            right: 58,
-            top: 190,
-            child: Text(
-              context.l10n.timeLeftText,
-              style: TextStyle(color: Colors.black, fontSize: 15),
-            ),
-          ),
-          Positioned(
-            right: 70,
-            top: 210,
-            child: Text(
-              prayerData.remainingTime,
-              style: TextStyle(color: Colors.black, fontSize: 15),
-            ),
-          ),
-          Positioned(
-            right: 20,
-            top: 300,
-            child: PrayerTimeItemWidget(
-              prayerName: context.l10n.prayerFajr,
-              prayerTime: prayerData.prayerTimes.fajr,
-              hasPassed: prayerData.prayerPassed[0],
-            ),
-          ),
-          Positioned(
-            right: 20,
-            top: 450,
-            child: PrayerTimeItemWidget(
-              prayerName: context.l10n.prayerTulu,
-              prayerTime: prayerData.prayerTimes.sunrise,
-              hasPassed: prayerData.prayerPassed[1],
-            ),
-          ),
-          Positioned(
-            left: 20,
-            bottom: 0,
-            child: PrayerTimeItemWidget(
-              prayerName: context.l10n.prayerDhuhr,
-              prayerTime: prayerData.prayerTimes.dhuhr,
-              hasPassed: prayerData.prayerPassed[2],
-            ),
-          ),
-          Positioned(
-            left: 300,
-            bottom: 0,
-            child: PrayerTimeItemWidget(
-              prayerName: context.l10n.prayerAsr,
-              prayerTime: prayerData.prayerTimes.asr,
-              hasPassed: prayerData.prayerPassed[3],
-            ),
-          ),
-          Positioned(
-            right: 500,
-            bottom: 0,
-            child: PrayerTimeItemWidget(
-              prayerName: context.l10n.prayerMaghrib,
-              prayerTime: prayerData.prayerTimes.maghrib,
-              hasPassed: prayerData.prayerPassed[4],
-            ),
-          ),
-          Positioned(
-            right: 200,
-            bottom: 0,
-            child: PrayerTimeItemWidget(
-              prayerName: context.l10n.prayerIsha,
-              prayerTime: prayerData.prayerTimes.isha,
-              hasPassed: prayerData.prayerPassed[4],
-            ),
+          BlocBuilder<PrayerBloc, PrayerState>(
+            builder: (context,state) {
+              final prayerData = state.prayerData;
+              return Stack(
+                children: [
+                Positioned(
+                  right: 40,
+                  bottom: 60,
+                  child: SizedBox(
+                    width: 100,
+                    child: Text(
+                      prayerData.currentDate,
+                      style: TextStyle(color: Colors.black, fontSize: 25),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 60,
+                  top: 130,
+                  child: Text(
+                    prayerData.currentTime,
+                    style: TextStyle(color: Colors.black, fontSize: 35),
+                  ),
+                ),
+                Positioned(
+                  right: 58,
+                  top: 190,
+                  child: Text(
+                    context.l10n.timeLeftText,
+                    style: TextStyle(color: Colors.black, fontSize: 15),
+                  ),
+                ),
+                Positioned(
+                  right: 70,
+                  top: 210,
+                  child: Text(
+                    prayerData.remainingTime,
+                    style: TextStyle(color: Colors.black, fontSize: 15),
+                  ),
+                ),
+                Positioned(
+                  right: 20,
+                  top: 300,
+                  child: PrayerTimeItemWidget(
+                    prayerName: context.l10n.prayerFajr,
+                    prayerTime: prayerData.prayerTimes.fajr,
+                    hasPassed: prayerData.prayerPassed[0],
+                  ),
+                ),
+                Positioned(
+                  right: 20,
+                  top: 450,
+                  child: PrayerTimeItemWidget(
+                    prayerName: context.l10n.prayerTulu,
+                    prayerTime: prayerData.prayerTimes.sunrise,
+                    hasPassed: prayerData.prayerPassed[1],
+                  ),
+                ),
+                Positioned(
+                  left: 20,
+                  bottom: 0,
+                  child: PrayerTimeItemWidget(
+                    prayerName: context.l10n.prayerDhuhr,
+                    prayerTime: prayerData.prayerTimes.dhuhr,
+                    hasPassed: prayerData.prayerPassed[2],
+                  ),
+                ),
+                Positioned(
+                  left: 300,
+                  bottom: 0,
+                  child: PrayerTimeItemWidget(
+                    prayerName: context.l10n.prayerAsr,
+                    prayerTime: prayerData.prayerTimes.asr,
+                    hasPassed: prayerData.prayerPassed[3],
+                  ),
+                ),
+                Positioned(
+                  right: 500,
+                  bottom: 0,
+                  child: PrayerTimeItemWidget(
+                    prayerName: context.l10n.prayerMaghrib,
+                    prayerTime: prayerData.prayerTimes.maghrib,
+                    hasPassed: prayerData.prayerPassed[4],
+                  ),
+                ),
+                Positioned(
+                  right: 200,
+                  bottom: 0,
+                  child: PrayerTimeItemWidget(
+                    prayerName: context.l10n.prayerIsha,
+                    prayerTime: prayerData.prayerTimes.isha,
+                    hasPassed: prayerData.prayerPassed[4],
+                  ),
+                ),
+              ]);
+            }
           ),
         ],
       );
-    });
+   
   }
 }
 
