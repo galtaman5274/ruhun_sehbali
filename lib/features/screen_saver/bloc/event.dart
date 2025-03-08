@@ -10,14 +10,14 @@ abstract class ScreenSaverEvent extends Equatable {
 
 /// Call this event whenever there is user interaction.
 class ResetInactivityTimer extends ScreenSaverEvent {
-  final String imagesType;
-  const ResetInactivityTimer(this.imagesType);
+ 
+  const ResetInactivityTimer();
 }
 
 /// This event is triggered by the timer when there’s no activity.
 class InactivityTimeout extends ScreenSaverEvent {
-  final String imagesType;
-  const InactivityTimeout(this.imagesType);
+ 
+  const InactivityTimeout();
 }
 
 class ShowScreenSaver extends ScreenSaverEvent {}
@@ -35,8 +35,7 @@ class SetAnimationDurationEvent extends ScreenSaverEvent {
 }
 
 class LoadStorage extends ScreenSaverEvent {
-  final List<String> storageImages;
-  const LoadStorage(this.storageImages);
+  const LoadStorage();
 }
 
 class ScreenSaverFullEvent extends ScreenSaverEvent {
@@ -51,6 +50,6 @@ class PickFolderEvent
     extends ScreenSaverEvent {} // New event for selecting a folder
 
 class LoadImagesFolder extends ScreenSaverEvent {
-  final String folderPath;
-  const LoadImagesFolder(this.folderPath);
+
+  const LoadImagesFolder();
 } // New event for selecting a folder

@@ -19,7 +19,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => AyineJsonCubit(dio: Dio())..checkForAyineJson()),
+          BlocProvider(create: (_) => AyineJsonCubit(dio: Dio())..startAutoUpdate()),
           BlocProvider(
             create: (_) => ScreenSaverBloc(),
           ),

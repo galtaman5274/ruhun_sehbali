@@ -42,9 +42,9 @@ class _ImagesUrlSelectorState extends State<ImagesUrlSelector> {
                         context.read<ScreenSaverBloc>()
                         .add(SetImagesUrlEvent(value!));
                     }else {
-                        context.read<AyineJsonCubit>().saveToStorage(value!.toLowerCase());
+                        //context.read<AyineJsonCubit>().saveToStorage(value!.toLowerCase());
                         context.read<ScreenSaverBloc>()
-                        .add(SetImagesUrlEvent(value));
+                        .add(SetImagesUrlEvent(value!.toLowerCase()));
                     }
                       
                     // Dispatch the event with the selected value.

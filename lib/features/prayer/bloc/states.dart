@@ -33,6 +33,7 @@ class PrayerData extends Equatable {
   final List<bool> prayerPassed;
   final String currentTime;
   final String currentDate;
+  final String azanType;
 
   const PrayerData(
       {required this.country,
@@ -50,12 +51,14 @@ class PrayerData extends Equatable {
       required this.remainingTime,
       required this.prayerPassed,
       required this.currentDate,
-      required this.currentTime});
+      required this.currentTime,
+      required this.azanType});
 
   factory PrayerData.initial() {
     final prayerTimes = PrayerTimes.today(Coordinates(40.7128, 74.0060),
         CalculationMethod.turkey.getParameters()..madhab = Madhab.hanafi);
     return PrayerData(
+      azanType: 'Turkish',
         country: 'US',
         state: '',
         city: '',
@@ -146,6 +149,7 @@ class PrayerData extends Equatable {
     List<bool>? prayerPassed,
     String? currentDate,
     String? currentTime,
+    String? azanType
   }) {
     return PrayerData(
         country: country ?? this.country,
@@ -163,7 +167,8 @@ class PrayerData extends Equatable {
         remainingTime: remainingTime ?? this.remainingTime,
         prayerPassed: prayerPassed ?? this.prayerPassed,
         currentDate: currentDate ?? this.currentDate,
-        currentTime: currentTime ?? this.currentTime);
+        currentTime: currentTime ?? this.currentTime,
+        azanType: azanType ?? this.azanType);
   }
 
   @override
@@ -181,5 +186,6 @@ class PrayerData extends Equatable {
         prayerTimes,
         prayerWeekdays,
         remainingTime,
+        azanType
       ];
 }

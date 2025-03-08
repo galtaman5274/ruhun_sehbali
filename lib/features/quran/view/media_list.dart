@@ -2,19 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ruhun_sehbali/features/home/provider/navigation_provider.dart';
 
-import 'media_player.dart';
-
 class MediaList extends StatelessWidget {
   final List<String> quranList;
-    final List<String> mp3List;
-
-  const MediaList({super.key, required this.quranList,required this.mp3List});
-
+  const MediaList({super.key, required this.quranList});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Qari List'),
+          title: const Text('Media List'),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => context.read<NavigationProvider>().setPage('home'),
@@ -28,15 +23,16 @@ class MediaList extends StatelessWidget {
               title: Row(
                 children: [
                   Text('${index + 1}'),
-                  SizedBox(width: 10,),
-                  Text(mp3List[index])
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text(quranList[index])
                 ],
               ),
-              onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) =>
-                          MediaPlayerPage(url: quranList[index]))),
+              // onTap: () => Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //         builder: (_) => MediaPlayerPage(url: mp3List[index]))),
             );
           },
         ));

@@ -25,7 +25,9 @@ class Alert {
   /// Expects the JSON to be a list of objects.
   factory Alert.fromJson(List<dynamic> json) {
     return Alert(
-      alerts: json.map((e) => AlertItem.fromJson(e as Map<String, dynamic>)).toList(),
+      alerts: json
+          .map((e) => AlertItem.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 }
@@ -60,28 +62,28 @@ class AzanFiles {
     String urlType,
   ) =>
       {
-        '01-Fajr': List<Map<String,dynamic>>.from(json['01-Fajr'])
+        '01-Fajr': List<Map<String, dynamic>>.from(json['01-Fajr'])
             .map((item) => '$url/$urlType/01-Fajr/${item['name']}')
             .toList(),
-        '02-Tulu': List<Map<String,dynamic>>.from(json['02-Tulu'])
+        '02-Tulu': List<Map<String, dynamic>>.from(json['02-Tulu'])
             .map((item) => '$url/$urlType/02-Tulu/${item['name']}')
             .toList(),
-        '03-Dhuhr': List<Map<String,dynamic>>.from(json['03-Dhuhr'])
+        '03-Dhuhr': List<Map<String, dynamic>>.from(json['03-Dhuhr'])
             .map((item) => '$url/$urlType/03-Dhuhr/${item['name']}')
             .toList(),
-        '04-Asr': List<Map<String,dynamic>>.from(json['04-Asr'])
+        '04-Asr': List<Map<String, dynamic>>.from(json['04-Asr'])
             .map((item) => '$url/$urlType/04-Asr/${item['name']}')
             .toList(),
-        '05-Maghrib': List<Map<String,dynamic>>.from(json['05-Maghrib'])
+        '05-Maghrib': List<Map<String, dynamic>>.from(json['05-Maghrib'])
             .map((item) => '$url/$urlType/05-Maghrib/${item['name']}')
             .toList(),
-        '06-Isha': List<Map<String,dynamic>>.from(json['06-Isha'])
+        '06-Isha': List<Map<String, dynamic>>.from(json['06-Isha'])
             .map((item) => '$url/$urlType/06-Isha/${item['name']}')
             .toList(),
-        '07-Suhoor': List<Map<String,dynamic>>.from(json['07-Suhoor'])
+        '07-Suhoor': List<Map<String, dynamic>>.from(json['07-Suhoor'])
             .map((item) => '$url/$urlType/07-Suhoor/${item['name']}')
             .toList(),
-        '08-Iftar': List<Map<String,dynamic>>.from(json['08-Iftar'])
+        '08-Iftar': List<Map<String, dynamic>>.from(json['08-Iftar'])
             .map((item) => '$url/$urlType/08-Iftar/${item['name']}')
             .toList(),
       };
@@ -92,7 +94,22 @@ class AzanFiles {
 /// --------------------
 
 class Quran {
-    final List<Qari> qariList;
+  final List<Qari> qariList;
+  final Map<String, dynamic> json;
+  // final Map<String, Map<String, List<Map<String, dynamic>>>> prayersDua = {
+  //   "Prayers-Dua_s": {
+  //     "General-Genel": [
+  //       {"name": "2020_03_18 Hacet_Duasi.mp3", "last_modified": 1586820104}
+  //     ],
+  //     "Tasbihat-Azkar": [
+  //       {"name": "Aksam_Dualari.mp3", "last_modified": 1586820204},
+  //       {"name": "Namaz Tesbihati.mp3", "last_modified": 1586963176},
+  //       {"name": "Sabah_Dualari.mp3", "last_modified": 1586820249},
+  //       {"name": "Tevhidname.mp3", "last_modified": 1587168871}
+  //     ]
+  //   }
+  // };
+  final Map<String, Map<String, List<Map<String, dynamic>>>> prayersDua;
   static const String url = 'https://app.ayine.tv/Ayine/Quran';
 
   static const List<String> qariNames = [
@@ -104,30 +121,44 @@ class Quran {
   static const List<String> qariImages = [
     'assets/qari/Muhammad_Siddiq_Minshawi.jpeg',
     'assets/qari/Muhammed_Jibril.jpeg',
-    'assets/qari/Mustafa_Ismail.jpeg'
+    'assets/qari/Mustafa_Ismail.jpeg',
+    'assets/images/logo_kuran.png'
   ];
 
-  Quran({required this.qariList});
+  Quran({required this.qariList, required this.prayersDua,required this.json});
 
   factory Quran.fromJson(Map<String, dynamic> json) {
+    final Map<String, Map<String, List<Map<String, dynamic>>>> prayersDua = {
+      "Prayers-Dua_s": {"General-Genel": [], "Tasbihat-Azkar": [ ]
+    }
+    };
     final qariList = List.generate(qariNames.length, (i) {
       final name = qariNames[i];
       return Qari(
-        name: name,
-        imgAsset: qariImages[i],
-        imgUrls: prepareUrl(json, name),
-        mp3Names: prepareNames(json, name)
-      );
+          name: name,
+          imgAsset: qariImages[i],
+          imgUrls: prepareUrl(json, name),
+          mp3Names: prepareNames(json, name));
     });
-    return Quran(qariList: qariList);
+    (json["Prayers-Dua_s"]["General-Genel"] as List).forEach(
+        (item) => prayersDua["Prayers-Dua_s"]?["General-Genel"]?.add(item));
+    (json["Prayers-Dua_s"]["Tasbihat-Azkar"] as List).forEach(
+        (item) => prayersDua["Prayers-Dua_s"]?["Tasbihat-Azkar"]?.add(item));
+    // print(json.keys.where((value)=> int.tryParse(value) == null));
+    return Quran(qariList: qariList, prayersDua: prayersDua, json: json);
   }
 
   /// Expects each qari's section to have a 'Hatim' list.
   static List<String> prepareUrl(Map<String, dynamic> json, String name) {
-    return List<Map<String,dynamic>>.from(json[name]['Hatim']).map((item) => '$url/$name/Hatim/${item['name']}').toList();
+    return List<Map<String, dynamic>>.from(json[name]['Hatim'])
+        .map((item) => '$url/$name/Hatim/${item['name']}')
+        .toList();
   }
+
   static List<String> prepareNames(Map<String, dynamic> json, String name) {
-    return List<Map<String,dynamic>>.from(json[name]['Hatim']).map((item) => "${item['name']}").toList();
+    return List<Map<String, dynamic>>.from(json[name]['Hatim'])
+        .map((item) => "${item['name']}")
+        .toList();
   }
 }
 
@@ -137,7 +168,11 @@ class Qari {
   final List<String> imgUrls;
   final List<String> mp3Names;
 
-  Qari({required this.name, required this.imgAsset, required this.imgUrls,required this.mp3Names});
+  Qari(
+      {required this.name,
+      required this.imgAsset,
+      required this.imgUrls,
+      required this.mp3Names});
 }
 
 /// --------------------
@@ -173,7 +208,9 @@ class ScreenSaver {
 
   /// Converts a list of file names to full URLs.
   static List<String> prepareUrl(Map<String, dynamic> json, String name) {
-   return List<Map<String, dynamic>>.from(json[name]).map((item) => '$url/$name/${item['name']}').toList();
+    return List<Map<String, dynamic>>.from(json[name])
+        .map((item) => '$url/$name/${item['name']}')
+        .toList();
   }
 
   List<String> getLocalImages(String locale) {

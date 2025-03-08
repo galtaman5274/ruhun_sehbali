@@ -1,10 +1,12 @@
 import 'dart:async';
-import 'dart:developer';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:ruhun_sehbali/features/home/provider/navigation_provider.dart';
+import 'package:ruhun_sehbali/features/settings/providers/ayine_json_cubit.dart';
+import 'package:ruhun_sehbali/features/settings/providers/model.dart';
+import 'package:video_player/video_player.dart';
 
 class AdhanPage extends StatefulWidget {
   const AdhanPage({super.key});
@@ -15,8 +17,8 @@ class AdhanPage extends StatefulWidget {
 
 class _AdhanPageState extends State<AdhanPage> {
   final AudioPlayer _audioPlayer = AudioPlayer();
-  // late VideoPlayerController _controller;
-
+  late VideoPlayerController _controller;
+  late final FileData fileData;
   int _currentImageIndex = 0;
 
   final _adhanImages = [
@@ -32,6 +34,20 @@ class _AdhanPageState extends State<AdhanPage> {
   @override
   void initState() {
     super.initState();
+    context.read<AyineJsonCubit>().getFileData().then((onValue) {
+      if (!mounted) return; // Check if widget is still mounted
+
+      fileData = onValue;
+      print(fileData.azanFiles);
+      // _controller = VideoPlayerController.file(
+      //     File(fileData.azanFiles['Arabic']['01-Fajr'][0]['local']))
+      //   ..initialize().then((_) {
+      //     if (!mounted) return; // Check if widget is still mounted
+      //     setState(() {
+      //       _controller.play();
+      //     });
+      //   });
+    });
     _timer = Timer.periodic(_imageChangeInterval, (time) {
       setState(() {
         if (_currentImageIndex == _adhanImages.length - 1) {
@@ -41,27 +57,19 @@ class _AdhanPageState extends State<AdhanPage> {
         }
       });
     });
-    _playAdhan(); // Start playing Adhan when the page opens
-    // _controller = VideoPlayerController.networkUrl(
-    //   Uri.parse('https://app.ayine.tv/Ayine/AzanFiles/Turkish/01-Fajr/001.mp4'),
-    // )..initialize().then((_) {
-    //     // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
-    //     // setState(() {});
-    //   });
-    // _controller.play();
   }
 
-  Future<void> _playAdhan() async {
-    final url = 'https://app.ayine.tv/Ayine/AzanFiles/Turkish/01-Fajr/001.mp4';
-    final encodedUrl = Uri.encodeFull(url);
-    try {
-      await _audioPlayer.play(
-        AssetSource('audio/Azan.mp3'),
-      ); // Ensure the path is correct
-    } catch (e) {
-      log('audioplayer error : ${e.toString()}');
-    }
-  }
+  // Future<void> _playAdhan() async {
+  //   final url = 'https://app.ayine.tv/Ayine/AzanFiles/Turkish/01-Fajr/001.mp4';
+  //   final encodedUrl = Uri.encodeFull(url);
+  //   try {
+  //     await _audioPlayer.play(
+  //       AssetSource('audio/Azan.mp3'),
+  //     ); // Ensure the path is correct
+  //   } catch (e) {
+  //     log('audioplayer error : ${e.toString()}');
+  //   }
+  // }
 
   // Future<void> _playAdhanVideo(){
   //   try {
@@ -80,6 +88,7 @@ class _AdhanPageState extends State<AdhanPage> {
     _audioPlayer.stop(); // Stop the audio when the page is closed
     _audioPlayer.dispose(); // Release resources
     _timer.cancel();
+    _controller.dispose();
     super.dispose();
   }
 

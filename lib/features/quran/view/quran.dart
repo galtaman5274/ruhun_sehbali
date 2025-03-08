@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ruhun_sehbali/features/home/provider/navigation_provider.dart';
-import '../bloc/playlist/bloc.dart';
+import 'package:ruhun_sehbali/features/quran/view/qari_profile.dart';
+import 'package:ruhun_sehbali/features/settings/providers/data_models.dart';
 import '../bloc/qari/bloc.dart';
-import 'media_list.dart';
 import 'media_player_page.dart'; // see below
 
 class QariScreen extends StatelessWidget {
@@ -39,15 +39,19 @@ class QariScreen extends StatelessWidget {
         builder: (context, state) {
           if (state is QariLoaded) {
             // Get the qariList from your state
-            final qariList = state.quranFiles.qariList;
-            return ListView.builder(
-              itemCount: qariList.length,
-              itemBuilder: (context, index) {
-                final qariName = qariList[index].name;
-                final qariImage = qariList[index].imgAsset;
-                // Assume each Qari has a property `mediaUrl` for the audio
-                final mediaUrl = qariList[index].imgUrls; 
 
+            final json = state.quranFiles;
+            final keys = json.keys
+                // .where((value) => int.tryParse(value) == null)
+                .toList();
+            return ListView.builder(
+              itemCount: keys.length,
+              itemBuilder: (context, index) {
+                final qariName = keys[index];
+                final qariImage = Quran.qariImages[index];
+                // Assume each Qari has a property `mediaUrl` for the audio
+                // final mediaUrl = state.quranFiles.qariList[0].imgUrls;
+                // print(mediaUrl);
                 return ListTile(
                   leading: Image(
                     image: AssetImage(qariImage),
@@ -57,25 +61,18 @@ class QariScreen extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => MediaList(quranList: qariList[index].imgUrls,mp3List: qariList[index].mp3Names,),
+                      //builder: (_) => MediaList(quranList: qariList[index].imgUrls,mp3List: qariList[index].mp3Names,),
+                      builder: (_) => QariProfile(
+                        qariName: qariName,
+                        json: json[qariName],
+                      ),
                     ),
                   ),
                   title: Text(qariName),
-                  subtitle: const Text('Egypt'),
-                  trailing: IconButton(
-                    onPressed: () {
-                      // Add the media URL to the playlist
-                      context.read<PlaylistBloc>().add(AddMedia(mediaUrl));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('$qariName added to playlist')),
-                      );
-                    },
-                    icon: const Text('Add to playlist'),
-                  ),
                 );
               },
             );
-          }  else {
+          } else {
             return const Center(child: Text('No data available.'));
           }
         },

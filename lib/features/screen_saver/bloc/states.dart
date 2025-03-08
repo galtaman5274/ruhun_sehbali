@@ -23,7 +23,6 @@ class ScreenSaverStateData extends Equatable {
   final bool turnOffDisplay;
   final int
       animationDuration; // The time to show each image or run an animation
-  final int inactivityTime; // Time before screensaver kicks in
   final List<Widget> images;
   final int currentIndex;
   final String currentAnimationType; // e.g., fade, scale, rotation
@@ -35,7 +34,6 @@ class ScreenSaverStateData extends Equatable {
       {required this.currentScreen,
       required this.showScreenSaver,
       required this.animationDuration,
-      required this.inactivityTime,
       required this.images,
       required this.currentIndex,
       required this.currentAnimationType,
@@ -52,7 +50,6 @@ class ScreenSaverStateData extends Equatable {
         turnOffDisplay: false,
         showScreenSaver: false,
         animationDuration: 30,
-        inactivityTime: 30,
         images: [
           Image(
             image: AssetImage('assets/screen_savers/tr/1-allah.jpg'),
@@ -68,7 +65,7 @@ class ScreenSaverStateData extends Equatable {
         currentIndex: 0,
         currentAnimationType: 'fade',
         screenSaverFull: true,
-        imgUrl: 'de',
+        imgUrl: 'tr',
         personalImagePath: '',
         );
   }
@@ -77,7 +74,6 @@ class ScreenSaverStateData extends Equatable {
       {String? currentScreen,
       bool? showScreenSaver,
       int? animationDuration,
-      int? inactivityTime,
       List<Widget>? images,
       int? currentIndex,
       String? currentAnimationType,
@@ -90,7 +86,6 @@ class ScreenSaverStateData extends Equatable {
         currentScreen: currentScreen ?? this.currentScreen,
         showScreenSaver: showScreenSaver ?? this.showScreenSaver,
         animationDuration: animationDuration ?? this.animationDuration,
-        inactivityTime: inactivityTime ?? this.inactivityTime,
         images: images ?? this.images,
         currentIndex: currentIndex ?? this.currentIndex,
         currentAnimationType: currentAnimationType ?? this.currentAnimationType,
@@ -107,7 +102,6 @@ class ScreenSaverStateData extends Equatable {
         currentScreen,
         showScreenSaver,
         animationDuration,
-        inactivityTime,
         images,
         currentIndex,
         currentAnimationType,

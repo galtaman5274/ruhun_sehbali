@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:equatable/equatable.dart';
 import 'package:file_picker/file_picker.dart';
@@ -9,13 +10,15 @@ import '../../storage_controller/storage_controller.dart';
 part 'event.dart';
 part 'states.dart';
 
+const _storedDataKey = "stored_files_data";
+
 /// --- Bloc Implementation ---
 class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
   Timer? _inactivityTimer;
   Timer? _imageChangeTimer;
-  final Duration inactivityDuration;
+
   final StorageController _secureStorage = StorageController();
-  ScreenSaverBloc({this.inactivityDuration = const Duration(seconds: 15)})
+  ScreenSaverBloc()
       : super(ScreenSaverInitial(ScreenSaverStateData.initial())) {
     on<ResetInactivityTimer>(_onResetInactivityTimer);
     on<InactivityTimeout>(_onInactivityTimeout);
@@ -41,13 +44,14 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
     final newAnimationDuration =
         int.tryParse(storedAnimationDuration ?? '30') ??
             state.saverStateData.animationDuration;
+    final imgUrl = await _secureStorage.getValue('imgUrl');
     //emit(ScreenSaverInitial(state.saverStateData));
     emit(ScreenSaverUpdated(state.saverStateData.copyWith(
         animationDuration: newAnimationDuration,
         personalImagePath: folderPath,
         screenSaverFull: isFull,
-        inactivityTime: newAnimationDuration,
-        turnOffDisplay: displayOff)));
+        turnOffDisplay: displayOff,
+        imgUrl: imgUrl)));
   }
 
   void _onScreenSaverFull(
@@ -73,6 +77,7 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
   void _onUsePersonalImagesFull(
       SetImagesUrlEvent event, Emitter<ScreenSaverState> emit) async {
     //emit(ScreenSaverInitial(state.saverStateData));
+    await _secureStorage.saveValue('imgUrl', event.imgUrl);
     emit(ScreenSaverUpdated(
         state.saverStateData.copyWith(imgUrl: event.imgUrl)));
   }
@@ -89,17 +94,30 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
     // Re-emit the current state with updated data:
   }
 
-  void _onLoadFromStorage(LoadStorage event, Emitter<ScreenSaverState> emit) {
-    // Map each local storage image path to an Image widget
-    final List<Widget> imageWidgets = event.storageImages.map((item) {
-      return Image.file(
-        File(item),
-        fit: BoxFit.cover,
-      );
-    }).toList();
-    //emit(ScreenSaverInitial(state.saverStateData));
-    emit(ScreenSaverUpdated(
-        state.saverStateData.copyWith(images: imageWidgets)));
+  void _onLoadFromStorage(
+      LoadStorage event, Emitter<ScreenSaverState> emit) async {
+    if (state.saverStateData.imgUrl == 'own') {
+      add(LoadImagesFolder());
+    } else {
+      final storedJson = await _secureStorage.getValue(_storedDataKey);
+
+      final Map<String, dynamic> storedData = storedJson != null
+          ? Map<String, dynamic>.from(jsonDecode(storedJson))
+          : <String, dynamic>{}; // Initialize as empty Map<String, dynamic>
+
+      if (storedData['ScreenSaver']
+              [state.saverStateData.imgUrl] != null)
+              {final List<Widget> imageWidgets = storedData['ScreenSaver']
+              [state.saverStateData.imgUrl]
+          .map<Widget>((item) {
+        return Image.file(
+          File(item['local']),
+          fit: BoxFit.cover,
+        );
+      }).toList();
+      emit(ScreenSaverUpdated(
+          state.saverStateData.copyWith(images: imageWidgets)));}
+    }
   }
 
   void _onResetInactivityTimer(
@@ -110,10 +128,10 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
     //emit(ScreenSaverInitial(state.saverStateData));
     emit(ScreenSaverUpdated(
         state.saverStateData.copyWith(showScreenSaver: false)));
-
     // Restart the timer.
-    _inactivityTimer = Timer(inactivityDuration, () {
-      add(InactivityTimeout(event.imagesType));
+    _inactivityTimer =
+        Timer(Duration(seconds: state.saverStateData.animationDuration), () {
+      add(InactivityTimeout());
     });
   }
 
@@ -136,9 +154,8 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
   /// This timer periodically triggers a new image if the screen saver is active.
   void _startImageChangeTimer() {
     _imageChangeTimer?.cancel();
-    // We'll run this every (animationDuration + some offset) seconds
-    // so that the UI can perform the transition in between.
-   
+    add(LoadStorage());
+
     _imageChangeTimer = Timer.periodic(
       Duration(seconds: state.saverStateData.animationDuration + 2),
       (timer) {
@@ -163,7 +180,7 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
   /// Load images from the selected folder
   Future<void> _loadImagesFromFolder(
       LoadImagesFolder event, Emitter<ScreenSaverState> emit) async {
-    final folder = Directory(event.folderPath);
+    final folder = Directory(state.saverStateData.personalImagePath);
     if (folder.existsSync()) {
       final images = folder
           .listSync()

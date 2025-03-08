@@ -7,7 +7,7 @@ class QariInitial extends QariState {}
 class QariLoading extends QariState {}
 
 class QariLoaded extends QariState {
-  final Quran quranFiles;
+  final Map<String, dynamic> quranFiles;
   QariLoaded(this.quranFiles);
 }
 

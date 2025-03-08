@@ -32,6 +32,7 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
     on<LoadCitiesEvent>(_onLoadCities);
     on<PrayerTimeAdjustedEvent>(_onPrayerAdjustments);
     on<PrayerWeekDaysEvent>(_onPraterWeedDaysUpdatd);
+    on<PrayerAzanTypeEvent>(_onPrayerAzanType);
   }
 
   /// **Load stored prayer settings and initialize prayer times**
@@ -53,6 +54,7 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
         _secureStorage.getValue('maghrib'),
         _secureStorage.getValue('isha'),
         _secureStorage.getValue('prayerWeekdays'),
+        _secureStorage.getValue('azanType'),
       ]);
 
       // Convert JSON back to a Map
@@ -70,6 +72,7 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
         final asr = int.parse(results[10] ?? '0');
         final maghrib = int.parse(results[11] ?? '0');
         final isha = int.parse(results[12] ?? '0');
+        final azanType = results[14];
         Map<String, dynamic> decodedMap = jsonDecode(results[13] ?? '');
         final prayerWeekdays = decodedMap
             .map((key, value) => MapEntry(key, Map<String, bool>.from(value)));
@@ -92,7 +95,8 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
             latitude: latitude,
             longitude: longitude,
             prayerTimes: prayerTimes,
-            prayerWeekdays: prayerWeekdays);
+            prayerWeekdays: prayerWeekdays,
+            azanType: azanType);
 
         emit(PrayerDataUpdated(updatedData));
 
@@ -168,25 +172,26 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
 
   Future<void> _onPrayerAdjustments(
       PrayerTimeAdjustedEvent event, Emitter<PrayerState> emit) async {
-        
     switch (event.prayerName) {
       case 'fajr':
         final prayerTimes = PrayerTimes.today(
           Coordinates(state.prayerData.latitude, state.prayerData.longitude),
           state.prayerData.calculationMethod.getParameters()
             ..adjustments.fajr = event.adjustment
-            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],);
+            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],
+        );
         final updatedData = state.prayerData.copyWith(
           prayerTimes: prayerTimes,
         );
 
         emit(PrayerDataUpdated(updatedData));
       case 'tulu':
-         final prayerTimes = PrayerTimes.today(
+        final prayerTimes = PrayerTimes.today(
           Coordinates(state.prayerData.latitude, state.prayerData.longitude),
           state.prayerData.calculationMethod.getParameters()
             ..adjustments.sunrise = event.adjustment
-            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],);
+            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],
+        );
         final updatedData = state.prayerData.copyWith(
           prayerTimes: prayerTimes,
         );
@@ -196,17 +201,19 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
           Coordinates(state.prayerData.latitude, state.prayerData.longitude),
           state.prayerData.calculationMethod.getParameters()
             ..adjustments.dhuhr = event.adjustment
-            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],);
+            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],
+        );
         final updatedData = state.prayerData.copyWith(
           prayerTimes: prayerTimes,
         );
         emit(PrayerDataUpdated(updatedData));
       case 'asr':
-         final prayerTimes = PrayerTimes.today(
+        final prayerTimes = PrayerTimes.today(
           Coordinates(state.prayerData.latitude, state.prayerData.longitude),
           state.prayerData.calculationMethod.getParameters()
             ..adjustments.asr = event.adjustment
-            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],);
+            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],
+        );
         final updatedData = state.prayerData.copyWith(
           prayerTimes: prayerTimes,
         );
@@ -216,17 +223,19 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
           Coordinates(state.prayerData.latitude, state.prayerData.longitude),
           state.prayerData.calculationMethod.getParameters()
             ..adjustments.maghrib = event.adjustment
-            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],);
+            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],
+        );
         final updatedData = state.prayerData.copyWith(
           prayerTimes: prayerTimes,
         );
         emit(PrayerDataUpdated(updatedData));
       case 'isha':
-         final prayerTimes = PrayerTimes.today(
+        final prayerTimes = PrayerTimes.today(
           Coordinates(state.prayerData.latitude, state.prayerData.longitude),
           state.prayerData.calculationMethod.getParameters()
             ..adjustments.isha = event.adjustment
-            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],);
+            ..madhab = Madhab.values[state.prayerData.asrMethodIndex],
+        );
         final updatedData = state.prayerData.copyWith(
           prayerTimes: prayerTimes,
         );
@@ -260,6 +269,7 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
         data.prayerTimes.calculationParameters.adjustments.maghrib.toString());
     await _secureStorage.saveValue('isha',
         data.prayerTimes.calculationParameters.adjustments.isha.toString());
+    await _secureStorage.saveValue('azanType', data.azanType);
     String jsonString = jsonEncode(data.prayerWeekdays);
     await _secureStorage.saveValue('prayerWeekdays', jsonString);
     final updatedData = state.prayerData.copyWith(
@@ -417,6 +427,11 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
       latitude: event.latitude,
       longitude: event.longitude,
     )));
+  }
+
+  void _onPrayerAzanType(PrayerAzanTypeEvent event, Emitter<PrayerState> emit) {
+    emit(
+        PrayerDataUpdated(state.prayerData.copyWith(azanType: event.azanType)));
   }
 
   void _onPraterWeedDaysUpdatd(

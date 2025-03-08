@@ -1,13 +1,22 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:developer';
 import 'package:dio/dio.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:ruhun_sehbali/features/settings/providers/data_source.dart';
 import 'package:ruhun_sehbali/features/storage_controller/storage_controller.dart';
 import 'data_models.dart';
+import 'model.dart';
 part 'ayine_states.dart';
+
+const _jsonUrl =
+    "https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=view";
+
+const _lastUpdateKey = "last_update_timestamp";
+const _storedDataKey = "stored_files_data";
 
 class AyineJsonCubit extends Cubit<AyineJsonState> {
   final Dio _dio;
@@ -30,7 +39,7 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
       log('<><><><><><> scan response status: ${checkResponse.statusCode}');
 
       final response = await _dio.get(
-        'https://app.ayine.tv/Ayine/files_api.php?key=ayine-random-253327x!11&action=view',
+        _jsonUrl,
         options: Options(responseType: ResponseType.json),
       );
 
@@ -38,6 +47,8 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
       log('<><><><><><> response data: ${response.data['UpdateApk']}');
 
       if (response.statusCode == 200) {
+        // final fileData = FileData.fromJson(response.data);
+        // print(fileData.alerts);
         return response.data;
       } else {
         return null;
@@ -49,150 +60,139 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
     }
   }
 
-  Future<void> checkForAyineJson() async {
-    emit(AyineJsonInitial());
-    try {
-      // Try to read the JSON from secure storage.
-      String? storedJson = await _secureStorage.getValue('ayine_json');
+//   Future<void> checkForAyineJson() async {
+//     try {
+//       // Try to read the JSON from secure storage.
+//       String? storedJson = await _secureStorage.getValue('ayine_json');
 
-      // If not stored, attempt to download it.
-      if (storedJson == null) {
-        try {
+//       final response = await _dio.get(
+//         _jsonUrl,
+//         options: Options(responseType: ResponseType.json),
+//       );
+
+//       if (response.statusCode == 200) {
+//         storedJson = response.data is String
+//             ? fixMalformedJson(response.data)
+//             : jsonEncode(response.data);
+//         final finalJson = FileData.fromJson(response.data);
+
+//         await _secureStorage.saveValue('ayine_json', storedJson);
+
+// // Parse the stored JSON string.
+//         final Map<String, dynamic> decoded = jsonDecode(storedJson);
+
+//         final Alert alert = Alert.fromJson(decoded['Alert']);
+
+//         final AzanFiles azanFiles = AzanFiles.fromJson(decoded['AzanFiles']);
+//         final Quran quran = Quran.fromJson(decoded['Quran']);
+//         final ScreenSaver screenSaver =
+//             ScreenSaver.fromJson(decoded['ScreenSaver']);
+
+//         // Emit a loaded state with these objects.
+//         emit(AyineJsonLoaded(fileData: finalJson));
+//       } else {
+//         throw Exception(
+//             'Failed to download JSON. Status code: ${response.statusCode}');
+//       }
+//     } on DioException catch (e) {
+//       throw Exception('Error downloading JSON: ${e.message}');
+//     } catch (e) {
+//       // Any error (including no internet) will be handled by the FutureBuilder.
+//       emit(AyineJsonError(message: 'message$e'));
+//     }
+//   }
+Future<FileData> getFileData () async{
+  final storedJson = await _secureStorage.getValue(_storedDataKey);
+   
+      final Map<String, dynamic> storedData =
+          Map<String, dynamic>.from(jsonDecode(storedJson ?? ''));
+      return  FileData.fromJson(storedData);
+}
+  Future<void> saveToStorage(String imgPath, String azanPath) async {
+    final storedJson = await _secureStorage.getValue(_storedDataKey);
+    if (storedJson != null) {
+      final finalJson =await getFileData();
+      final images = finalJson.screenSaver[imgPath];
+
+    final String url = 'https://app.ayine.tv/Ayine/ScreenSaver/$imgPath/';
+    try {
+      final Directory appDocDir = await getApplicationDocumentsDirectory();
+      final Directory directory =
+          Directory('${appDocDir.path}/screen_savers/$imgPath');
+
+      directory.createSync(recursive: true);
+      for (var i = 0; i < images.length; i++) {
+        if (images[i]['local'] == '') {
           final response = await _dio.get(
-            'https://app.ayine.tv/Ayine/ayine.json',
-            options: Options(responseType: ResponseType.json),
+            '$url${images[i]['name']}',
+            options: Options(responseType: ResponseType.bytes),
           );
+
           if (response.statusCode == 200) {
-            storedJson = response.data is String
-                ? fixMalformedJson(response.data)
-                : jsonEncode(response.data);
-            await _secureStorage.saveValue('ayine_json', storedJson);
+            final file = File('${directory.path}/${images[i]['name']}');
+
+            // Write binary data to the file
+            await file.writeAsBytes(response.data);
+
+            // Optionally save to local in your ScreenSaver model
+            finalJson.screenSaver[imgPath][i]['local'] = file.absolute.path;
+            await _secureStorage.saveValue(
+                _storedDataKey, jsonEncode(finalJson.toJson()));
+            print('File saved: ${file.absolute.path}');
           } else {
-            throw Exception(
-                'Failed to download JSON. Status code: ${response.statusCode}');
+            print(
+                'Failed to download ${images[i]}. Status code: ${response.statusCode}');
           }
-        } on DioException catch (e) {
-          throw Exception('Error downloading JSON: ${e.message}');
         }
       }
-
-      // Parse the stored JSON string.
-      final Map<String, dynamic> decoded = jsonDecode(storedJson);
-
-      final Alert alert = Alert.fromJson(decoded['Alert']);
-
-      final AzanFiles azanFiles = AzanFiles.fromJson(decoded['AzanFiles']);
-      final Quran quran = Quran.fromJson(decoded['Quran']);
-      final ScreenSaver screenSaver =
-          ScreenSaver.fromJson(decoded['ScreenSaver']);
-
-      // Emit a loaded state with these objects.
-      emit(AyineJsonLoaded(
-        alert: alert,
-        azanFiles: azanFiles,
-        quran: quran,
-        screenSaver: screenSaver,
-      ));
     } catch (e) {
-      // Any error (including no internet) will be handled by the FutureBuilder.
-      emit(AyineJsonError(message: 'message$e'));
+      // emit(AyineJsonError(message: 'Error downloading images: $e'));
+      print(e);
     }
-  }
+    final azanFiles = finalJson.azanFiles;
 
-  Future<void> saveToStorage(String locale) async {
-    final currentState = state;
-    if (currentState is AyineJsonLoaded) {
-      final screenSaver = currentState.screenSaver;
-      final images = screenSaver.getImages(locale);
+    final String urlAzan = 'https://app.ayine.tv/Ayine/AzanFiles/$azanPath/';
+    final keys = azanFiles[azanPath].keys;
+    for (var i in keys) {
+      if (azanFiles[azanPath][i].isNotEmpty) {
+        try {
+          final Directory appDocDir = await getApplicationDocumentsDirectory();
+          final Directory directory =
+              Directory('${appDocDir.path}/AzanFiles/$azanPath/$i');
 
-      try {
-        final Directory appDocDir = await getApplicationDocumentsDirectory();
-        final Directory directory =
-            Directory('${appDocDir.path}/screen_savers/$locale');
-        if (!directory.existsSync()) {
           directory.createSync(recursive: true);
-          for (var i = 0; i < images.length; i++) {
-            final uri = Uri.parse(images[i]);
-
-            final response = await _dio.get(
-              images[i],
-              options: Options(responseType: ResponseType.bytes),
-            );
-
-            if (response.statusCode == 200) {
-              final fileName = uri.pathSegments.last;
-              final file = File('${directory.path}/$fileName');
-
-              // Write binary data to the file
-              await file.writeAsBytes(response.data);
-
-              // Optionally save to local in your ScreenSaver model
-              screenSaver.saveToLocal(file.absolute.path, locale);
-
-              if (i % 10 == 0) {
-                emit(AyineJsonInitial());
-                emit(AyineJsonLoadedStorage(
-                  alert: currentState.alert,
-                  azanFiles: currentState.azanFiles,
-                  quran: currentState.quran,
-                  screenSaver: screenSaver,
-                ));
-              }
-              print('File saved: ${file.absolute.path}');
-            } else {
-              print(
-                  'Failed to download ${images[i]}. Status code: ${response.statusCode}');
-            }
-          }
-        } else {
-          final List<FileSystemEntity> files = directory.listSync();
-          for (var file in files) {
-            screenSaver.saveToLocal(file.absolute.path, locale);
-          }
-
-          if (screenSaver.getLocalImages(locale).length != images.length) {
-            // directory
-            //     .delete(recursive: true)
-            //     .then((_) => directory.createSync(recursive: true));
-            screenSaver.getLocalImages(locale).clear();
-            for (final imageUrl in images) {
-              final uri = Uri.parse(imageUrl);
-
+          for (var j = 0; j < azanFiles[azanPath][i].length; j++) {
+            if (azanFiles[azanPath][i][j]['local'] == '') {
               final response = await _dio.get(
-                imageUrl,
+                '$urlAzan/$i/${azanFiles[azanPath][i][j]['name']}',
                 options: Options(responseType: ResponseType.bytes),
               );
+
               if (response.statusCode == 200) {
-                final fileName = uri.pathSegments.last;
-                final file = File('${directory.path}/$fileName');
+                final file = File('${directory.path}/${azanFiles[azanPath][i][j]['name']}');
+
                 // Write binary data to the file
                 await file.writeAsBytes(response.data);
+
                 // Optionally save to local in your ScreenSaver model
-                screenSaver.saveToLocal(file.absolute.path, locale);
+                finalJson.azanFiles[azanFiles[azanPath][i][j]['local']] = file.absolute.path;
+                await _secureStorage.saveValue(
+                    _storedDataKey, jsonEncode(finalJson.toJson()));
                 print('File saved: ${file.absolute.path}');
               } else {
                 print(
-                    'Failed to download $imageUrl. Status code: ${response.statusCode}');
+                    'Failed to download ${azanFiles[azanPath][i]}. Status code: ${response.statusCode}');
               }
             }
           }
+        } catch (e) {
+          // emit(AyineJsonError(message: 'Error downloading images: $e'));
+          print(e);
         }
-        // Once images are saved, we emit the ContentSavedToStorage state
-        emit(AyineJsonInitial());
-        emit(AyineJsonLoadedStorage(
-          alert: currentState.alert,
-          azanFiles: currentState.azanFiles,
-          quran: currentState.quran,
-          screenSaver: screenSaver,
-        ));
-      } catch (e) {
-        // emit(AyineJsonError(message: 'Error downloading images: $e'));
-        print(e);
       }
-    } else {
-      checkForAyineJson().then((_) => saveToStorage(locale));
-      //emit(AyineJsonError(message: 'Content must be downloaded first.'));
     }
+    }
+    
   }
 
   String fixMalformedJson(String input) {
@@ -279,5 +279,92 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
     } catch (e) {
       throw Exception('Unexpected error: $e');
     }
+  }
+
+  Future<void> checkAndUpdateFiles() async {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final lastUpdateStr = await _secureStorage.getValue(_lastUpdateKey);
+    final lastUpdate =
+        lastUpdateStr != null ? int.tryParse(lastUpdateStr) ?? 0 : 0;
+
+    if (now - lastUpdate >= 24 * 60 * 60 * 1000) {
+      try {
+        // Fetch latest JSON
+        final response = await _dio.get(
+          _jsonUrl,
+          options: Options(responseType: ResponseType.json),
+        );
+
+        // Convert response data to Map<String, dynamic>
+        final Map<String, dynamic> newData = Map<String, dynamic>.from(
+            response.data is String
+                ? jsonDecode(response.data)
+                : response.data);
+
+        // Retrieve stored JSON
+        final storedJson = await _secureStorage.getValue(_storedDataKey);
+        final Map<String, dynamic> storedData = storedJson != null
+            ? Map<String, dynamic>.from(jsonDecode(storedJson))
+            : <String, dynamic>{}; // Initialize as empty Map<String, dynamic>
+
+        // Compare and update
+        final updatedData = _mergeLatestData(storedData, newData);
+        final finalJson = FileData.fromJson(updatedData);
+
+        // Store updated data and timestamp
+        await _secureStorage.saveValue(_storedDataKey, jsonEncode(updatedData));
+        await _secureStorage.saveValue(_lastUpdateKey, now.toString());
+
+        emit(AyineJsonInitial());
+        emit(AyineJsonLoaded(fileData: finalJson));
+        print("✔ Data updated successfully.");
+      } catch (e, stackTrace) {
+        print("❌ Error updating data: $e");
+        print("Stack trace: $stackTrace"); // Added stack trace for debugging
+      }
+    } else {
+      try {
+        final storedJson = await _secureStorage.getValue(_storedDataKey);
+        if (storedJson != null) {
+          final Map<String, dynamic> storedData =
+              Map<String, dynamic>.from(jsonDecode(storedJson));
+          final finalJson = FileData.fromJson(storedData);
+          emit(AyineJsonLoaded(fileData: finalJson));
+        }
+        print("⏳ 24 hours have not passed yet.");
+      } catch (e) {
+        print("❌ Error loading stored data: $e");
+      }
+    }
+  }
+
+  Map<String, dynamic> _mergeLatestData(
+      Map<String, dynamic> oldData, Map<String, dynamic> newData) {
+    final result = Map<String, dynamic>.from(oldData);
+
+    newData.forEach((key, value) {
+      if (value is List) {
+        result[key] = value; // Simply replace lists
+      } else if (value is Map) {
+        // Recursively merge nested maps
+        if (!result.containsKey(key) || !(result[key] is Map)) {
+          result[key] = <String, dynamic>{};
+        }
+        result[key] = _mergeLatestData(
+            Map<String, dynamic>.from(result[key] as Map),
+            Map<String, dynamic>.from(value));
+      } else {
+        result[key] = value;
+      }
+    });
+
+    return result;
+  }
+
+  void startAutoUpdate() {
+    checkAndUpdateFiles();
+    Timer.periodic(Duration(hours: 24), (timer) async {
+      await checkAndUpdateFiles();
+    });
   }
 }
