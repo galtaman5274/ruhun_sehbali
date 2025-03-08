@@ -43,11 +43,11 @@ class AppSettingsTab extends StatelessWidget {
                   .add(SetAnimationDurationEvent(value.toInt())),
             ),
             const SizedBox(height: 20),
-            Text(
-              context.l10n.screenSaverImages,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            ImagesUrlSelector(),
+            // Text(
+            //   context.l10n.screenSaverImages,
+            //   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            // ),
+            // ImagesUrlSelector(),
             ListTile(
               title: const Text('Screen Saver Full screen'),
               trailing: Checkbox(
