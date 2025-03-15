@@ -34,6 +34,7 @@ class PrayerData extends Equatable {
   final String currentTime;
   final String currentDate;
   final String azanType;
+  final (bool, String) playAdhan;
 
   const PrayerData(
       {required this.country,
@@ -52,13 +53,15 @@ class PrayerData extends Equatable {
       required this.prayerPassed,
       required this.currentDate,
       required this.currentTime,
-      required this.azanType});
+      required this.azanType,
+      required this.playAdhan});
 
   factory PrayerData.initial() {
     final prayerTimes = PrayerTimes.today(Coordinates(40.7128, 74.0060),
         CalculationMethod.turkey.getParameters()..madhab = Madhab.hanafi);
     return PrayerData(
-      azanType: 'Turkish',
+      playAdhan: (false,''),
+        azanType: 'Turkish',
         country: 'US',
         state: '',
         city: '',
@@ -132,25 +135,25 @@ class PrayerData extends Equatable {
         currentTime: '');
   }
 
-  PrayerData copyWith({
-    String? country,
-    String? state,
-    String? city,
-    double? latitude,
-    double? longitude,
-    CalculationMethod? calculationMethod,
-    int? asrMethodIndex,
-    List<Country>? countries,
-    List<State>? states,
-    List<City>? cities,
-    PrayerTimes? prayerTimes,
-    Map<String, Map<String, bool>>? prayerWeekdays,
-    String? remainingTime,
-    List<bool>? prayerPassed,
-    String? currentDate,
-    String? currentTime,
-    String? azanType
-  }) {
+  PrayerData copyWith(
+      {String? country,
+      String? state,
+      String? city,
+      double? latitude,
+      double? longitude,
+      CalculationMethod? calculationMethod,
+      int? asrMethodIndex,
+      List<Country>? countries,
+      List<State>? states,
+      List<City>? cities,
+      PrayerTimes? prayerTimes,
+      Map<String, Map<String, bool>>? prayerWeekdays,
+      String? remainingTime,
+      List<bool>? prayerPassed,
+      String? currentDate,
+      String? currentTime,
+      String? azanType,
+      (bool,String)? playAdhan}) {
     return PrayerData(
         country: country ?? this.country,
         state: state ?? this.state,
@@ -168,7 +171,8 @@ class PrayerData extends Equatable {
         prayerPassed: prayerPassed ?? this.prayerPassed,
         currentDate: currentDate ?? this.currentDate,
         currentTime: currentTime ?? this.currentTime,
-        azanType: azanType ?? this.azanType);
+        azanType: azanType ?? this.azanType,
+        playAdhan: playAdhan ?? this.playAdhan);
   }
 
   @override
@@ -186,6 +190,7 @@ class PrayerData extends Equatable {
         prayerTimes,
         prayerWeekdays,
         remainingTime,
-        azanType
+        azanType,
+        playAdhan
       ];
 }

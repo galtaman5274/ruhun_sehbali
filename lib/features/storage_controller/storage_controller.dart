@@ -1,8 +1,9 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class StorageController {
+
   // Private constructor
-  StorageController._internal() : _storage = const FlutterSecureStorage();
+  const StorageController._internal() : _storage = const FlutterSecureStorage();
 
   // The single instance of StorageController
   static final StorageController _instance = StorageController._internal();

@@ -79,7 +79,7 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
     //emit(ScreenSaverInitial(state.saverStateData));
     await _secureStorage.saveValue('imgUrl', event.imgUrl);
     emit(ScreenSaverUpdated(
-        state.saverStateData.copyWith(imgUrl: event.imgUrl)));
+        state.saverStateData.copyWith(imgUrl: event.imgUrl,currentIndex: 0)));
   }
 
   void _onSetAnimationDuration(
@@ -105,18 +105,19 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
           ? Map<String, dynamic>.from(jsonDecode(storedJson))
           : <String, dynamic>{}; // Initialize as empty Map<String, dynamic>
 
-      if (storedData['ScreenSaver']
-              [state.saverStateData.imgUrl] != null)
-              {final List<Widget> imageWidgets = storedData['ScreenSaver']
-              [state.saverStateData.imgUrl]
-          .map<Widget>((item) {
-        return Image.file(
-          File(item['local']),
-          fit: BoxFit.cover,
-        );
-      }).toList();
-      emit(ScreenSaverUpdated(
-          state.saverStateData.copyWith(images: imageWidgets)));}
+      if (storedData['ScreenSaver'][state.saverStateData.imgUrl] != null) {
+        final List<Widget> imageWidgets = storedData['ScreenSaver']
+                [state.saverStateData.imgUrl]
+            .map<Widget>((item) {
+          return Image.file(
+            File(item['local']),
+            fit: BoxFit.cover,
+          );
+        }).toList();
+        
+        emit(ScreenSaverUpdated(
+            state.saverStateData.copyWith(images: imageWidgets)));
+      }
     }
   }
 

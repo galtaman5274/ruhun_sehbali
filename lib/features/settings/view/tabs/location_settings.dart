@@ -234,7 +234,7 @@ class SetupLocation extends StatelessWidget {
                     const SizedBox(height: 20),
                     // Display Coordinates
                     Text(
-                        'Latitude: ${prayerData.latitude}, Longitude: ${prayerData.longitude}'),
+                        'Latitude: ${prayerData.latitude.toStringAsFixed(2)}, Longitude: ${prayerData.longitude.toStringAsFixed(2)}'),
                     const SizedBox(height: 30),
                     // Center(
                     //   child: ElevatedButton(

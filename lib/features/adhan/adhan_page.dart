@@ -7,7 +7,6 @@ import 'package:ruhun_sehbali/features/home/provider/navigation_provider.dart';
 import 'package:ruhun_sehbali/features/settings/providers/ayine_json_cubit.dart';
 import 'package:ruhun_sehbali/features/settings/providers/model.dart';
 import 'package:video_player/video_player.dart';
-
 class AdhanPage extends StatefulWidget {
   const AdhanPage({super.key});
 
@@ -17,8 +16,8 @@ class AdhanPage extends StatefulWidget {
 
 class _AdhanPageState extends State<AdhanPage> {
   final AudioPlayer _audioPlayer = AudioPlayer();
-  late VideoPlayerController _controller;
-  late final FileData fileData;
+  VideoPlayerController? _controller;
+  late final Map<String, dynamic> azanFiles;
   int _currentImageIndex = 0;
 
   final _adhanImages = [
@@ -34,20 +33,7 @@ class _AdhanPageState extends State<AdhanPage> {
   @override
   void initState() {
     super.initState();
-    context.read<AyineJsonCubit>().getFileData().then((onValue) {
-      if (!mounted) return; // Check if widget is still mounted
-
-      fileData = onValue;
-      print(fileData.azanFiles);
-      // _controller = VideoPlayerController.file(
-      //     File(fileData.azanFiles['Arabic']['01-Fajr'][0]['local']))
-      //   ..initialize().then((_) {
-      //     if (!mounted) return; // Check if widget is still mounted
-      //     setState(() {
-      //       _controller.play();
-      //     });
-      //   });
-    });
+    _initializeVideo();
     _timer = Timer.periodic(_imageChangeInterval, (time) {
       setState(() {
         if (_currentImageIndex == _adhanImages.length - 1) {
@@ -58,7 +44,50 @@ class _AdhanPageState extends State<AdhanPage> {
       });
     });
   }
+  Future<void> _playAdhan() async {
+    final encodedUrl = Uri.encodeFull('assets/audio/Azan.mp3');
+    await _audioPlayer.play(AssetSource(encodedUrl)); // Ensure the path is correct
+  }
+  Future<void> _initializeVideo() async {
+    try {
+      final ayineState = await context.read<AyineJsonCubit>().getFileData();
+      if (!mounted) return;
 
+      setState(() {
+        azanFiles = ayineState?.azanFiles['Arabic'];
+      });
+
+      _controller =
+          VideoPlayerController.file(File(azanFiles['01-Fajr'][0]['local']));
+
+      await _controller?.initialize();
+      if (!mounted) return;
+
+      setState(() {
+        _controller?.play();
+      });
+    } catch (e) {
+      debugPrint('Video initialization error: $e');
+    }
+  }
+
+  Future<FileData?> getFileData() async {
+    return await FileData.loadFromStorage();
+    // .then((onValue) {
+    //     if (!mounted) return; // Check if widget is still mounted
+
+    //     fileData = onValue;
+    //     print(fileData.azanFiles);
+    //     // _controller = VideoPlayerController.file(
+    //     //     File(fileData.azanFiles['Arabic']['01-Fajr'][0]['local']))
+    //     //   ..initialize().then((_) {
+    //     //     if (!mounted) return; // Check if widget is still mounted
+    //     //     setState(() {
+    //     //       _controller.play();
+    //     //     });
+    //     //   });
+    //   });
+  }
   // Future<void> _playAdhan() async {
   //   final url = 'https://app.ayine.tv/Ayine/AzanFiles/Turkish/01-Fajr/001.mp4';
   //   final encodedUrl = Uri.encodeFull(url);
@@ -88,7 +117,7 @@ class _AdhanPageState extends State<AdhanPage> {
     _audioPlayer.stop(); // Stop the audio when the page is closed
     _audioPlayer.dispose(); // Release resources
     _timer.cancel();
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -101,54 +130,61 @@ class _AdhanPageState extends State<AdhanPage> {
           _audioPlayer.stop(); // Stop the audio when the page is closed
           _timer.cancel();
         },
-        child:
-            // _controller.value.isInitialized
-            //     ? SizedBox(
-            //         width: MediaQuery.sizeOf(context).width,
-            //         height: MediaQuery.sizeOf(context).height,
-            //         child: Stack(
-            //           children: [
-            //             VideoPlayer(_controller),
-            //             VideoProgressIndicator(
-            //               _controller,
-            //               allowScrubbing: true,
-            //               colors: VideoProgressColors(
-            //                 playedColor: Colors.blue,
-            //                 bufferedColor: const Color.fromRGBO(50, 50, 200, 0.2),
-            //                 backgroundColor:
-            //                     const Color.fromRGBO(200, 200, 200, 0.5),
-            //               ),
-            //             ),
-            //           ],
-            //         ),
-            //       )
-            //     :
-            Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage(
-                _adhanImages[_currentImageIndex],
-              ), // Path to your background image
-              fit: BoxFit.cover,
-            ),
-          ),
-          // child: Center(
-          //   child: Container(
-          //     color: Colors.black54, // Optional: Semi-transparent overlay
-          //     padding: const EdgeInsets.all(16.0),
-          //     child: const Text(
-          //       'Adhan is Playing...',
-          //       style: TextStyle(
-          //         fontSize: 24,
-          //         fontWeight: FontWeight.bold,
-          //         color: Colors.white,
-          //       ),
-          //     ),
-          //   ),
-          // ),
-        ),
+        child:  _controller != null
+            ? SizedBox(
+                width: MediaQuery.sizeOf(context).width,
+                height: MediaQuery.sizeOf(context).height,
+                child: Stack(
+                  children: [
+                    VideoPlayer(_controller as VideoPlayerController),
+                    VideoProgressIndicator(
+                      _controller as VideoPlayerController,
+                      allowScrubbing: true,
+                      colors: VideoProgressColors(
+                        playedColor: Colors.blue,
+                        bufferedColor: const Color.fromRGBO(50, 50, 200, 0.2),
+                        backgroundColor:
+                            const Color.fromRGBO(200, 200, 200, 0.5),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : Container(
+                width: double.infinity,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(
+                      _adhanImages[_currentImageIndex],
+                    ), // Path to your background image
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: Center(
+                  child: ElevatedButton(
+                      onPressed: () {
+                        getFileData().then((value) {
+                          print(value?.screenSaver['de']);
+                        });
+                      },
+                      child: Text('get data')),
+                ),
+                // child: Center(
+                //   child: Container(
+                //     color: Colors.black54, // Optional: Semi-transparent overlay
+                //     padding: const EdgeInsets.all(16.0),
+                //     child: const Text(
+                //       'Adhan is Playing...',
+                //       style: TextStyle(
+                //         fontSize: 24,
+                //         fontWeight: FontWeight.bold,
+                //         color: Colors.white,
+                //       ),
+                //     ),
+                //   ),
+                // ),
+              ),
       ),
     );
   }

@@ -8,9 +8,7 @@ abstract class AyineJsonState extends Equatable {
 class AyineJsonInitial extends AyineJsonState {}
 
 class AyineJsonLoaded extends AyineJsonState {
-
   final FileData fileData;
-
   AyineJsonLoaded({
     required this.fileData,
   });

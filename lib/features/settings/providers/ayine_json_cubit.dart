@@ -1,3 +1,4 @@
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -29,8 +30,27 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
   })  : _dio = dio,
         dataSource = DataSource(dio),
         super(AyineJsonInitial()) {
+    // _initializeFileData();
     // getAyineJson();
   }
+
+  
+
+  Future<void> updateLocalPath(
+      String category, String key, int index, String path) async {
+    try {
+      if (state is AyineJsonLoaded) {
+        final currentState = state as AyineJsonLoaded;
+        final updatedData =
+            currentState.fileData.updateLocalPath(category, key, index, path);
+        await updatedData.saveToStorage(_secureStorage);
+        emit(AyineJsonLoaded(fileData: updatedData));
+      }
+    } catch (e) {
+      emit(AyineJsonError(message: 'Failed to update local path: $e'));
+    }
+  }
+
   Future<Map<String, dynamic>?> getAyineJson() async {
     try {
       final checkResponse = await _dio.get(
@@ -60,128 +80,60 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
     }
   }
 
-//   Future<void> checkForAyineJson() async {
-//     try {
-//       // Try to read the JSON from secure storage.
-//       String? storedJson = await _secureStorage.getValue('ayine_json');
+  Future<FileData> getFileData() async {
+    final storedJson = await _secureStorage.getValue(_storedDataKey);
 
-//       final response = await _dio.get(
-//         _jsonUrl,
-//         options: Options(responseType: ResponseType.json),
-//       );
+    final Map<String, dynamic> storedData =
+        Map<String, dynamic>.from(jsonDecode(storedJson ?? ''));
+    return FileData.fromJson(storedData);
+  }
+Future <Map<String, dynamic>> getFileDatas() async {
+    final storedJson = await _secureStorage.getValue(_storedDataKey);
 
-//       if (response.statusCode == 200) {
-//         storedJson = response.data is String
-//             ? fixMalformedJson(response.data)
-//             : jsonEncode(response.data);
-//         final finalJson = FileData.fromJson(response.data);
-
-//         await _secureStorage.saveValue('ayine_json', storedJson);
-
-// // Parse the stored JSON string.
-//         final Map<String, dynamic> decoded = jsonDecode(storedJson);
-
-//         final Alert alert = Alert.fromJson(decoded['Alert']);
-
-//         final AzanFiles azanFiles = AzanFiles.fromJson(decoded['AzanFiles']);
-//         final Quran quran = Quran.fromJson(decoded['Quran']);
-//         final ScreenSaver screenSaver =
-//             ScreenSaver.fromJson(decoded['ScreenSaver']);
-
-//         // Emit a loaded state with these objects.
-//         emit(AyineJsonLoaded(fileData: finalJson));
-//       } else {
-//         throw Exception(
-//             'Failed to download JSON. Status code: ${response.statusCode}');
-//       }
-//     } on DioException catch (e) {
-//       throw Exception('Error downloading JSON: ${e.message}');
-//     } catch (e) {
-//       // Any error (including no internet) will be handled by the FutureBuilder.
-//       emit(AyineJsonError(message: 'message$e'));
-//     }
-//   }
-Future<FileData> getFileData () async{
-  final storedJson = await _secureStorage.getValue(_storedDataKey);
-   
-      final Map<String, dynamic> storedData =
-          Map<String, dynamic>.from(jsonDecode(storedJson ?? ''));
-      return  FileData.fromJson(storedData);
-}
-  Future<void> saveToStorage(String imgPath, String azanPath) async {
+    final Map<String, dynamic> storedData =
+        Map<String, dynamic>.from(jsonDecode(storedJson ?? ''));
+    return storedData;
+  }
+  Future<void> saveQuranToStorage(String qari, String quranFile,
+      [String? fileName]) async {
     final storedJson = await _secureStorage.getValue(_storedDataKey);
     if (storedJson != null) {
-      final finalJson =await getFileData();
-      final images = finalJson.screenSaver[imgPath];
+      final finalJson = await getFileData();
+      final qaris = finalJson.quran[qari];
 
-    final String url = 'https://app.ayine.tv/Ayine/ScreenSaver/$imgPath/';
-    try {
-      final Directory appDocDir = await getApplicationDocumentsDirectory();
-      final Directory directory =
-          Directory('${appDocDir.path}/screen_savers/$imgPath');
+      final String url = 'https://app.ayine.tv/Ayine/Quran/$qari';
 
-      directory.createSync(recursive: true);
-      for (var i = 0; i < images.length; i++) {
-        if (images[i]['local'] == '') {
-          final response = await _dio.get(
-            '$url${images[i]['name']}',
-            options: Options(responseType: ResponseType.bytes),
-          );
-
-          if (response.statusCode == 200) {
-            final file = File('${directory.path}/${images[i]['name']}');
-
-            // Write binary data to the file
-            await file.writeAsBytes(response.data);
-
-            // Optionally save to local in your ScreenSaver model
-            finalJson.screenSaver[imgPath][i]['local'] = file.absolute.path;
-            await _secureStorage.saveValue(
-                _storedDataKey, jsonEncode(finalJson.toJson()));
-            print('File saved: ${file.absolute.path}');
-          } else {
-            print(
-                'Failed to download ${images[i]}. Status code: ${response.statusCode}');
-          }
-        }
-      }
-    } catch (e) {
-      // emit(AyineJsonError(message: 'Error downloading images: $e'));
-      print(e);
-    }
-    final azanFiles = finalJson.azanFiles;
-
-    final String urlAzan = 'https://app.ayine.tv/Ayine/AzanFiles/$azanPath/';
-    final keys = azanFiles[azanPath].keys;
-    for (var i in keys) {
-      if (azanFiles[azanPath][i].isNotEmpty) {
+      if (qaris[quranFile].isNotEmpty) {
         try {
           final Directory appDocDir = await getApplicationDocumentsDirectory();
           final Directory directory =
-              Directory('${appDocDir.path}/AzanFiles/$azanPath/$i');
+              Directory('${appDocDir.path}/Quran/$qari/$quranFile');
 
           directory.createSync(recursive: true);
-          for (var j = 0; j < azanFiles[azanPath][i].length; j++) {
-            if (azanFiles[azanPath][i][j]['local'] == '') {
+          for (var j = 0; j < qaris[quranFile].length; j++) {
+            if (qaris[quranFile][j]['local'] == '') {
               final response = await _dio.get(
-                '$urlAzan/$i/${azanFiles[azanPath][i][j]['name']}',
+                '$url/$quranFile/${qaris[quranFile][j]['name']}',
                 options: Options(responseType: ResponseType.bytes),
               );
 
               if (response.statusCode == 200) {
-                final file = File('${directory.path}/${azanFiles[azanPath][i][j]['name']}');
+                final file =
+                    File('${directory.path}/${qaris[quranFile][j]['name']}');
 
                 // Write binary data to the file
                 await file.writeAsBytes(response.data);
 
                 // Optionally save to local in your ScreenSaver model
-                finalJson.azanFiles[azanFiles[azanPath][i][j]['local']] = file.absolute.path;
+                finalJson.quran[qari][quranFile][j]['local'] =
+                    file.absolute.path;
+                print(finalJson.quran[qari][quranFile][j]['local']);
                 await _secureStorage.saveValue(
                     _storedDataKey, jsonEncode(finalJson.toJson()));
                 print('File saved: ${file.absolute.path}');
               } else {
                 print(
-                    'Failed to download ${azanFiles[azanPath][i]}. Status code: ${response.statusCode}');
+                    'Failed to download ${qaris[qari][quranFile]}. Status code: ${response.statusCode}');
               }
             }
           }
@@ -191,8 +143,99 @@ Future<FileData> getFileData () async{
         }
       }
     }
+  }
+
+  Future<void> saveToStorage(String imgPath, String azanPath) async {
+    final storedJson = await _secureStorage.getValue(_storedDataKey);
+    if (storedJson != null) {
+      final finalJson = await getFileData();
+      final images = finalJson.screenSaver[imgPath];
+
+      final String url = 'https://app.ayine.tv/Ayine/ScreenSaver/$imgPath/';
+      try {
+        final Directory appDocDir = await getApplicationDocumentsDirectory();
+        final Directory directory =
+            Directory('${appDocDir.path}/screen_savers/$imgPath/');
+        if (!await directory.exists() || directory.listSync().isEmpty) {
+          directory.createSync(recursive: true);
+          for (var i = 0; i < images.length; i++) {
+            if (images[i]['local'] == '') {
+              final response = await _dio.get(
+                '$url${images[i]['name']}',
+                options: Options(responseType: ResponseType.bytes),
+              );
+
+              if (response.statusCode == 200) {
+                final file = File('${directory.path}${images[i]['name']}');
+
+                // Write binary data to the file
+                await file.writeAsBytes(response.data);
+
+                // Optionally save to local in your ScreenSaver model
+                finalJson.screenSaver[imgPath][i]['local'] = file.absolute.path;
+                await _secureStorage.saveValue(
+                    _storedDataKey, jsonEncode(finalJson.toJson()));
+                print('File saved: ${file.absolute.path}');
+              } else {
+                print(
+                    'Failed to download ${images[i]}. Status code: ${response.statusCode}');
+              }
+            }
+          }
+        }
+
+        final azanFiles = finalJson.azanFiles;
+
+        final String urlAzan = 'https://app.ayine.tv/Ayine/AzanFiles/$azanPath';
+        final keys = azanFiles[azanPath].keys;
+        for (var i in keys) {
+          if (azanFiles[azanPath][i].isNotEmpty) {
+            final Directory appDocDir =
+                await getApplicationDocumentsDirectory();
+            final Directory directory =
+                Directory('${appDocDir.path}/AzanFiles/$azanPath/$i');
+
+            directory.createSync(recursive: true);
+            for (var j = 0; j < azanFiles[azanPath][i].length; j++) {
+              if (azanFiles[azanPath][i][j]['local'] == '') {
+                final response = await _dio.get(
+                  '$urlAzan/$i/${azanFiles[azanPath][i][j]['name']}',
+                  options: Options(
+                    responseType: ResponseType.bytes,
+                    headers: {
+                      'Accept': 'video/mp4',
+                      'Content-Type': 'video/mp4',
+                    },
+                  ),
+                );
+
+                if (response.statusCode == 200) {
+                  final file = File(
+                      '${directory.path}/${azanFiles[azanPath][i][j]['name']}');
+
+                  // Write binary data to the file
+                  await file.writeAsBytes(response.data);
+
+                  // Optionally save to local in your ScreenSaver model
+                  finalJson.azanFiles[azanPath][i][j]['local'] =
+                      file.absolute.path;
+                  print(finalJson.azanFiles[azanPath][i][j]);
+                  await _secureStorage.saveValue(
+                      _storedDataKey, jsonEncode(finalJson.toJson()));
+                  print('File saved: ${file.absolute.path}');
+                } else {
+                  print(
+                      'Failed to download ${azanFiles[azanPath][i]}. Status code: ${response.statusCode}');
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {
+        // emit(AyineJsonError(message: 'Error downloading images: $e'));
+        print(e);
+      }
     }
-    
   }
 
   String fixMalformedJson(String input) {
@@ -289,52 +332,38 @@ Future<FileData> getFileData () async{
 
     if (now - lastUpdate >= 24 * 60 * 60 * 1000) {
       try {
-        // Fetch latest JSON
         final response = await _dio.get(
           _jsonUrl,
           options: Options(responseType: ResponseType.json),
         );
 
-        // Convert response data to Map<String, dynamic>
-        final Map<String, dynamic> newData = Map<String, dynamic>.from(
-            response.data is String
-                ? jsonDecode(response.data)
-                : response.data);
+        final Map<String, dynamic> newData = response.data is String
+            ? jsonDecode(response.data)
+            : Map<String, dynamic>.from(response.data);
 
-        // Retrieve stored JSON
-        final storedJson = await _secureStorage.getValue(_storedDataKey);
-        final Map<String, dynamic> storedData = storedJson != null
-            ? Map<String, dynamic>.from(jsonDecode(storedJson))
-            : <String, dynamic>{}; // Initialize as empty Map<String, dynamic>
-
-        // Compare and update
-        final updatedData = _mergeLatestData(storedData, newData);
-        final finalJson = FileData.fromJson(updatedData);
-
-        // Store updated data and timestamp
-        await _secureStorage.saveValue(_storedDataKey, jsonEncode(updatedData));
+        // Get current stored data
+        final currentData = await FileData.loadFromStorage();
+        // Merge and update data
+        if (currentData != null) {
+          final updatedData = _mergeLatestData(currentData.toJson(), newData);
+          final finalData = FileData.fromJson(updatedData);
+          await finalData.saveToStorage(_secureStorage);
         await _secureStorage.saveValue(_lastUpdateKey, now.toString());
-
-        emit(AyineJsonInitial());
-        emit(AyineJsonLoaded(fileData: finalJson));
-        print("✔ Data updated successfully.");
-      } catch (e, stackTrace) {
-        print("❌ Error updating data: $e");
-        print("Stack trace: $stackTrace"); // Added stack trace for debugging
-      }
-    } else {
-      try {
-        final storedJson = await _secureStorage.getValue(_storedDataKey);
-        if (storedJson != null) {
-          final Map<String, dynamic> storedData =
-              Map<String, dynamic>.from(jsonDecode(storedJson));
-          final finalJson = FileData.fromJson(storedData);
-          emit(AyineJsonLoaded(fileData: finalJson));
+        emit(AyineJsonLoaded(fileData: finalData));
+        }else{
+          final finalData = FileData.fromJson(newData);
+await finalData.saveToStorage(_secureStorage);
+        await _secureStorage.saveValue(_lastUpdateKey, now.toString());
+        emit(AyineJsonLoaded(fileData: finalData));
         }
-        print("⏳ 24 hours have not passed yet.");
+      
       } catch (e) {
-        print("❌ Error loading stored data: $e");
+        emit(AyineJsonError(message: 'Failed to update data: $e'));
       }
+    }else {
+      final finalData = await FileData.loadFromStorage();
+      if (finalData != null)
+        emit(AyineJsonLoaded(fileData: finalData));
     }
   }
 

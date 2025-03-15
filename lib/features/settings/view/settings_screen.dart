@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ruhun_sehbali/features/home/provider/navigation_provider.dart';
 import 'package:ruhun_sehbali/features/localization/localization.dart';
+import 'package:ruhun_sehbali/features/settings/view/tabs/download_files.dart';
 
 import 'tabs/app_settings.dart';
 import 'tabs/location_settings.dart';
@@ -55,6 +56,13 @@ class _SettingsPageState extends State<SettingsPage> {
                     icon: Icons.location_on_outlined,
                     section: context.l10n.locationSettings,
                     index: 2,
+                    currentIndex: currentIndex,
+                    func: setIndex,
+                  ),
+                  MenuItem(
+                    icon: Icons.download,
+                    section: 'Download',
+                    index: 3,
                     currentIndex: currentIndex,
                     func: setIndex,
                   ),
@@ -126,7 +134,8 @@ class Content extends StatelessWidget {
           children: [
             const PrayerSettingsTab(),
             const AppSettingsTab(),
-            SetupLocation()
+            SetupLocation(),
+            DownloadFilesTab()
           ],
         ),
       ),

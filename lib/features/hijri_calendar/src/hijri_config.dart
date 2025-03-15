@@ -175,10 +175,10 @@ class HijriCalendarConfig {
     lengthOfMonth = getDaysInMonth(hYear, hMonth);
 
     // Debug output
-    print(
-        'Converted Gregorian Date: $year-$month-$day to Hijri Date: $hYear-$hMonth-$hDay');
-    print(
-        'Indices - CJDN: $cjdn, MCJDN: $mcjdn, ILN: $iln, Index: $index, Adjustment: $adjustment');
+    // print(
+    //     'Converted Gregorian Date: $year-$month-$day to Hijri Date: $hYear-$hMonth-$hDay');
+    // print(
+    //     'Indices - CJDN: $cjdn, MCJDN: $mcjdn, ILN: $iln, Index: $index, Adjustment: $adjustment');
 
     return _formattedHijriDate();
   }

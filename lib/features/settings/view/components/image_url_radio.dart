@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ruhun_sehbali/features/screen_saver/bloc/screen_saver.dart';
 import 'package:ruhun_sehbali/features/settings/providers/ayine_json_cubit.dart';
 
+import '../../../prayer/bloc/prayer_bloc.dart';
+
 class ImagesUrlSelector extends StatefulWidget {
   const ImagesUrlSelector({super.key});
 
@@ -36,19 +38,24 @@ class _ImagesUrlSelectorState extends State<ImagesUrlSelector> {
                   value: option,
                   groupValue: state.saverStateData.imgUrl,
                   onChanged: (value) {
-                    if (value?.toLowerCase() == 'own'){
-                  state.saverStateData.personalImagePath == '' ? ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text('select pictures folder'))) :
-                        context.read<ScreenSaverBloc>()
-                        .add(SetImagesUrlEvent(value!));
-                    }else {
-                        //context.read<AyineJsonCubit>().saveToStorage(value!.toLowerCase());
-                        context.read<ScreenSaverBloc>()
-                        .add(SetImagesUrlEvent(value!.toLowerCase()));
+                    if (value?.toLowerCase() == 'own') {
+                      state.saverStateData.personalImagePath == ''
+                          ? ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('select pictures folder')))
+                          : context
+                              .read<ScreenSaverBloc>()
+                              .add(SetImagesUrlEvent(value!));
+                    } else {
+                      final prayerBloc = context.read<PrayerBloc>();
+                      context
+                          .read<AyineJsonCubit>()
+                          .saveToStorage(value!.toLowerCase(),prayerBloc.state.prayerData.azanType);
+                      context
+                          .read<ScreenSaverBloc>()
+                          .add(SetImagesUrlEvent(value.toLowerCase()));
                     }
-                      
+
                     // Dispatch the event with the selected value.
-                    
                   },
                 ),
               );

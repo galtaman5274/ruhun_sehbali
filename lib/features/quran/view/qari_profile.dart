@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ruhun_sehbali/features/home/provider/navigation_provider.dart';
 import 'package:ruhun_sehbali/features/quran/view/media_list.dart';
+import 'package:ruhun_sehbali/features/settings/providers/ayine_json_cubit.dart';
 import '../bloc/playlist/bloc.dart';
 import 'media_player_page.dart';
 
@@ -13,8 +14,7 @@ class QariProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items =
-        json.keys.toList();
+    final items = json.keys.toList();
     final List<String> urls = [];
     final List<String> names = [];
     final String url = 'https://app.ayine.tv/Ayine/Quran/';
@@ -92,7 +92,10 @@ class QariProfile extends StatelessWidget {
                             ),
                           ),
                           MaterialButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              
+                              context.read<AyineJsonCubit>().saveQuranToStorage(qariName, items[index]);
+                            },
                             child: Row(
                               children: [
                                 Text('download'),

@@ -1,47 +1,138 @@
-import 'package:equatable/equatable.dart';
+import 'dart:convert';
 
-class FileData  extends Equatable{
+import 'package:equatable/equatable.dart';
+import 'package:ruhun_sehbali/features/storage_controller/storage_controller.dart';
+
+const _storedDataKey = "stored_files_data";
+const url = 'https://app.ayine.tv/Ayine/';
+
+class FileData extends Equatable {
+  // Add static instance
+  static FileData? _instance;
+  static final StorageController _storage = StorageController();
+
   final List<Map<String, dynamic>> alerts;
   final Map<String, dynamic> azanFiles;
   final Map<String, dynamic> pictures;
   final Map<String, dynamic> quran;
   final Map<String, dynamic> screenSaver;
 
-  const FileData(
-      {required this.alerts,
-      required this.azanFiles,
-      required this.pictures,
-      required this.quran,
-      required this.screenSaver});
+  // Make constructor private
+  const FileData._({
+    required this.alerts,
+    required this.azanFiles,
+    required this.pictures,
+    required this.quran,
+    required this.screenSaver,
+  });
+
+  // Add factory constructor for singleton instance
+  factory FileData({
+    required List<Map<String, dynamic>> alerts,
+    required Map<String, dynamic> azanFiles,
+    required Map<String, dynamic> pictures,
+    required Map<String, dynamic> quran,
+    required Map<String, dynamic> screenSaver,
+  }) {
+    _instance ??= FileData._(
+      alerts: alerts,
+      azanFiles: azanFiles,
+      pictures: pictures,
+      quran: quran,
+      screenSaver: screenSaver,
+    );
+    return _instance!;
+  }
+
+  // Get singleton instance
+  static FileData get instance {
+    if (_instance == null) {
+      throw StateError('FileData has not been initialized');
+    }
+    return _instance!;
+  }
+
+  static Future<FileData?> loadFromStorage() async {
+    try {
+      final storedJson = await _storage.getValue(_storedDataKey);
+      if (storedJson != null) {
+        final Map<String, dynamic> data = jsonDecode(storedJson);
+        _instance = FileData.fromJson(data);
+        return _instance!;
+      }
+      return null;
+      //throw StateError('No stored data found');
+    } catch (e) {
+      return null;
+      //throw StateError('Failed to load FileData: $e');
+    }
+  }
+
+  // Add method to save current instance
+  Future<void> saveToStorage(StorageController storage) async {
+    try {
+      final jsonString = jsonEncode(toJson());
+      await storage.saveValue(_storedDataKey, jsonString);
+    } catch (e) {
+      throw StateError('Failed to save FileData: $e');
+    }
+  }
+
+  // Add method to update local path
+  FileData updateLocalPath(String category, String key, int index, String path,
+      [String? qariFile, String? azanTime]) {
+    Map<String, dynamic> newData = toJson();
+
+    switch (category) {
+      case 'quran':
+        if (newData['Quran'][key] != null) {
+          newData['Quran'][key][qariFile][index]['local'] = path;
+        }
+        break;
+      case 'screenSaver':
+        if (newData['ScreenSaver'][key] != null) {
+          newData['ScreenSaver'][key][index]['local'] = path;
+        }
+        break;
+      case 'azanFiles':
+        if (newData['AzanFiles'][key] != null) {
+          newData['AzanFiles'][key][azanTime][index]['local'] = path;
+        }
+        break;
+    }
+
+    return FileData.fromJson(newData);
+  }
 
   factory FileData.fromJson(Map<String, dynamic> json) {
     return FileData(
-      alerts: _addLocal(json["Alert"] ?? []),
-      azanFiles: _cleanJson(json["AzanFiles"] ?? {}),
-      pictures: _cleanJson(json["Pictures"] ?? {}),
-      quran: _cleanJson(json["Quran"] ?? {}),
-      screenSaver: _cleanJson(json["ScreenSaver"] ?? {}),
+      alerts: _addLocal(json["Alert"] ?? [], 'Alert'),
+      azanFiles: _cleanJson(json["AzanFiles"] ?? {},"AzanFiles"),
+      pictures: _cleanJson(json["Pictures"] ?? {},"Pictures"),
+      quran: _cleanJson(json["Quran"] ?? {},"Quran"),
+      screenSaver: _cleanJson(json["ScreenSaver"] ?? {},"ScreenSaver"),
     );
   }
 
-  static List<Map<String, dynamic>> _addLocal(List<dynamic> files) {
+  static List<Map<String, dynamic>> _addLocal(List<dynamic> files, String key) {
     final List<Map<String, dynamic>> localFiles = [];
     for (var value in files) {
       if (value is Map<String, dynamic>) {
         localFiles.add({
           "name": value["name"],
           "last_modified": value["last_modified"],
-          'local': ''
+          'local': '',
+          'url': '$key/${value['name']}'
         });
       }
     }
     return localFiles;
   }
 
-  static Map<String, dynamic> _cleanJson(Map<String, dynamic> json) {
+  static Map<String, dynamic> _cleanJson(Map<String, dynamic> json,String url) {
     // Create a new map to store cleaned data
     Map<String, dynamic> cleanedJson = {};
-    
+
     json.forEach((key, value) {
       // Skip numeric keys
       if (int.tryParse(key) != null) {
@@ -49,17 +140,18 @@ class FileData  extends Equatable{
       }
 
       if (value is List) {
-        cleanedJson[key] = _addLocal(value);
+        cleanedJson[key] = _addLocal(value, key);
       } else if (value is Map<String, dynamic>) {
         // Recursively clean nested maps
-        cleanedJson[key] = _cleanJson(value);
+        cleanedJson[key] = _cleanJson(value,'$url/$key');
       } else {
         cleanedJson[key] = value;
       }
     });
-    
+
     return cleanedJson;
   }
+
   Map<String, dynamic> toJson() {
     return {
       'Alert': alerts,
@@ -71,12 +163,7 @@ class FileData  extends Equatable{
   }
 
   @override
-  List<Object?> get props => [ 
-   alerts,
-   azanFiles,
-  pictures,
-   quran,
-  screenSaver];
+  List<Object?> get props => [alerts, azanFiles, pictures, quran, screenSaver];
 }
 
 // class FileUpdater {

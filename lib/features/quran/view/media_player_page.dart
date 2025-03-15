@@ -59,34 +59,65 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
           body: Center(
             child: _playlist.isEmpty
                 ? const Text("Playlist is empty")
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                          'Playing track ${_currentIndex + 1} of ${_playlist.length}'),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () {
-                          _playTrack(_playlist[_currentIndex]);
-                        },
-                        child: const Text('Play'),
-                      ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () async {
-                          await _audioPlayer.pause();
-                        },
-                        child: const Text('Pause'),
-                      ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () async {
-                          await _audioPlayer.stop();
-                        },
-                        child: const Text('Stop'),
-                      ),
-                    ],
+                : 
+                ListView.builder(
+          itemCount: _playlist.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Row(
+                children: [
+                  Text('${index + 1}'),
+                  SizedBox(
+                    width: 10,
                   ),
+                  Text(_playlist[index])
+                ],
+              ),
+              // trailing: MaterialButton(
+              //   onPressed: () {
+              //     // Add the media URL to the playlist
+              //     final playerState = context.read<PlaylistBloc>();
+              //     playerState.add(AddMedia(
+              //         playerState.state.playlist..add(quranList[index])));
+              //     ScaffoldMessenger.of(context).showSnackBar(
+              //       SnackBar(content: Text('media added to playlist')),
+              //     );
+              //   },
+              //   child: Row(
+              //     children: [Text('Add to p laylist'), Icon(Icons.list)],
+              //   ),
+              // ),
+            );
+          },
+        )
+                // Column(
+                //     mainAxisAlignment: MainAxisAlignment.center,
+                //     children: [
+                //       Text(
+                //           'Playing track ${_currentIndex + 1} of ${_playlist.length}'),
+                //       const SizedBox(height: 20),
+                //       ElevatedButton(
+                //         onPressed: () {
+                //           _playTrack(_playlist[_currentIndex]);
+                //         },
+                //         child: const Text('Play'),
+                //       ),
+                //       const SizedBox(height: 10),
+                //       ElevatedButton(
+                //         onPressed: () async {
+                //           await _audioPlayer.pause();
+                //         },
+                //         child: const Text('Pause'),
+                //       ),
+                //       const SizedBox(height: 10),
+                //       ElevatedButton(
+                //         onPressed: () async {
+                //           await _audioPlayer.stop();
+                //         },
+                //         child: const Text('Stop'),
+                //       ),
+                //     ],
+                //   ),
           ),
         );
       },

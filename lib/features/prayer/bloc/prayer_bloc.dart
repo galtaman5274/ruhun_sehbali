@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:adhan/adhan.dart';
 import 'package:equatable/equatable.dart';
 import 'package:geocoding/geocoding.dart';
@@ -11,6 +12,7 @@ import '../../storage_controller/storage_controller.dart';
 
 part 'event.dart';
 part 'states.dart';
+const _storedDataKey = "stored_files_data";
 
 class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
   final StorageController _secureStorage = StorageController();
@@ -115,6 +117,49 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
     });
   }
 
+  void callAdhan(PrayerAzanEvent event, Emitter<PrayerState> emit) async {
+    final weekday = DateTime.now().weekday;
+    final prayers = [
+      "01-Fajr",
+      "02-Tulu",
+      "03-Dhuhr",
+      "04-Asr",
+      "05-Maghrib",
+      "06-Isha",
+      "07-Suhoor",
+      "08-Iftar"
+    ];
+    final weekdays = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
+    ];
+    final isAdhan = state.prayerData.prayerWeekdays[event.azanPrayerType]
+            ?[weekdays[weekday + 1]] ??
+        false;
+    if (isAdhan) {
+      final storedJson = await _secureStorage.getValue(_storedDataKey);
+
+      final Map<String, dynamic> storedData = storedJson != null
+          ? Map<String, dynamic>.from(jsonDecode(storedJson))
+          : <String, dynamic>{}; // Initialize as empty Map<String, dynamic>
+
+      if (storedData['AzanFiles'][state.prayerData.azanType]
+              [event.azanPrayerType] !=
+          null) {
+        final String path = storedData['AzanFiles'][state.prayerData.azanType]
+            [event.azanPrayerType];
+        final updatedData =
+            state.prayerData.copyWith(playAdhan: (isAdhan, path));
+        emit(PrayerDataUpdated(updatedData));
+      }
+    }
+  }
+
   /// **Calculate and update remaining time for the next prayer**
   void _onUpdateRemainingTime(
       UpdateRemainingTimeEvent event, Emitter<PrayerState> emit) {
@@ -127,7 +172,19 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
       state.prayerData.prayerTimes.maghrib,
       state.prayerData.prayerTimes.isha
     ];
-
+    for (var i = 0; i < prayerTimesList.length; i++) {
+      if (prayerTimesList[0] == now) {
+        add(PrayerAzanEvent('fajr'));
+      } else if (prayerTimesList[2] == now) {
+        add(PrayerAzanEvent('dhuhr'));
+      } else if (prayerTimesList[3] == now) {
+        add(PrayerAzanEvent('asr'));
+      } else if (prayerTimesList[4] == now) {
+        add(PrayerAzanEvent('maghrib'));
+      } else if (prayerTimesList[5] == now) {
+        add(PrayerAzanEvent('isha'));
+      }
+    }
     final nextPrayerTime = getNextPrayerTime(now, prayerTimesList);
     final remainingTime = nextPrayerTime != null
         ? _formatDuration(nextPrayerTime.difference(now))

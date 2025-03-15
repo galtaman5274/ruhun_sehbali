@@ -86,6 +86,10 @@ class PrayerAzanTypeEvent extends PrayerEvent {
   final String azanType;
   const PrayerAzanTypeEvent(this.azanType);
 }
+class PrayerAzanEvent extends PrayerEvent {
+  final String azanPrayerType;
+  const PrayerAzanEvent(this.azanPrayerType);
+}
 class PrayerWeekDaysEvent extends PrayerEvent {
   final String prayer;
   final Map<String, bool> weekDayAdjustment;
