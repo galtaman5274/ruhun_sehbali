@@ -236,16 +236,14 @@ class SetupLocation extends StatelessWidget {
                     Text(
                         'Latitude: ${prayerData.latitude.toStringAsFixed(2)}, Longitude: ${prayerData.longitude.toStringAsFixed(2)}'),
                     const SizedBox(height: 30),
-                    // Center(
-                    //   child: ElevatedButton(
-                    //     onPressed: () {
-                    //       bloc.add(const SavePrayerSettingsEvent());
-                    //       Navigator.pushReplacement(context,
-                    //           MaterialPageRoute(builder: (_) => HomeScreen()));
-                    //     },
-                    //     child: const Text('Save and Continue'),
-                    //   ),
-                    // ),
+                    Divider(),
+                    ElevatedButton(
+                      onPressed: () => context
+                          .read<PrayerBloc>()
+                          .add(UpdatePrayerSettingsEvent()),
+                      child: const Text('Save Settings',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
                   ],
                 ),
               )

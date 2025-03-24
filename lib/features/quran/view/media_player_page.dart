@@ -6,7 +6,6 @@ import 'package:audioplayers/audioplayers.dart';
 
 import '../bloc/playlist/bloc.dart';
 
-
 class MediaPlayerPage extends StatefulWidget {
   const MediaPlayerPage({super.key});
 
@@ -16,7 +15,7 @@ class MediaPlayerPage extends StatefulWidget {
 
 class _MediaPlayerPageState extends State<MediaPlayerPage> {
   final AudioPlayer _audioPlayer = AudioPlayer();
-  List<String> _playlist = [];
+  List<PlaylistItem> _playlist = [];
   int _currentIndex = 0;
 
   @override
@@ -28,7 +27,7 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
         setState(() {
           _currentIndex++;
         });
-        _playTrack(_playlist[_currentIndex]);
+        _playTrack(_playlist[_currentIndex].url);
       }
     });
   }
@@ -57,68 +56,67 @@ class _MediaPlayerPageState extends State<MediaPlayerPage> {
           floatingActionButton:
               FloatingActionButton(onPressed: () => Navigator.pop(context)),
           body: Center(
-            child: _playlist.isEmpty
-                ? const Text("Playlist is empty")
-                : 
-                ListView.builder(
-          itemCount: _playlist.length,
-          itemBuilder: (context, index) {
-            return ListTile(
-              title: Row(
-                children: [
-                  Text('${index + 1}'),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(_playlist[index])
-                ],
-              ),
-              // trailing: MaterialButton(
-              //   onPressed: () {
-              //     // Add the media URL to the playlist
-              //     final playerState = context.read<PlaylistBloc>();
-              //     playerState.add(AddMedia(
-              //         playerState.state.playlist..add(quranList[index])));
-              //     ScaffoldMessenger.of(context).showSnackBar(
-              //       SnackBar(content: Text('media added to playlist')),
-              //     );
-              //   },
-              //   child: Row(
-              //     children: [Text('Add to p laylist'), Icon(Icons.list)],
-              //   ),
-              // ),
-            );
-          },
-        )
-                // Column(
-                //     mainAxisAlignment: MainAxisAlignment.center,
-                //     children: [
-                //       Text(
-                //           'Playing track ${_currentIndex + 1} of ${_playlist.length}'),
-                //       const SizedBox(height: 20),
-                //       ElevatedButton(
-                //         onPressed: () {
-                //           _playTrack(_playlist[_currentIndex]);
-                //         },
-                //         child: const Text('Play'),
-                //       ),
-                //       const SizedBox(height: 10),
-                //       ElevatedButton(
-                //         onPressed: () async {
-                //           await _audioPlayer.pause();
-                //         },
-                //         child: const Text('Pause'),
-                //       ),
-                //       const SizedBox(height: 10),
-                //       ElevatedButton(
-                //         onPressed: () async {
-                //           await _audioPlayer.stop();
-                //         },
-                //         child: const Text('Stop'),
-                //       ),
-                //     ],
-                //   ),
-          ),
+              child: _playlist.isEmpty
+                  ? const Text("Playlist is empty")
+                  : Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                _playTrack(_playlist[_currentIndex].url);
+                              },
+                              child: const Text('Play'),
+                            ),
+                            const SizedBox(width: 30),
+                            ElevatedButton(
+                              onPressed: () async {
+                                await _audioPlayer.pause();
+                              },
+                              child: const Text('Pause'),
+                            ),
+                            const SizedBox(width: 30),
+                            ElevatedButton(
+                              onPressed: () async {
+                                await _audioPlayer.stop();
+                              },
+                              child: const Text('Stop'),
+                            ),
+                          ],
+                        ),
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: _playlist.length,
+                            itemBuilder: (context, index) {
+                              return ListTile(
+                                  title: Row(
+                                    children: [
+                                      Text('${index + 1}'),
+                                      SizedBox(
+                                        width: 10,
+                                      ),
+                                      Text(_playlist[index].name)
+                                    ],
+                                  ),
+                                  trailing: MaterialButton(
+                                    onPressed: () {
+                                      // Add the media URL to the playlist
+                                      // final playerState = context.read<PlaylistBloc>();
+                                      // playerState.add(AddMedia(
+                                      //     playerState.state.playlist..add(quranList[index])));
+                                      // ScaffoldMessenger.of(context).showSnackBar(
+                                      //   SnackBar(content: Text('media added to playlist')),
+                                      // );
+                                      _playTrack(_playlist[index].url);
+                                    },
+                                    child: Icon(Icons.play_arrow),
+                                  ));
+                            },
+                          ),
+                        ),
+                      ],
+                    )),
         );
       },
     );

@@ -13,12 +13,13 @@
     "video": "Video",
     "theory": "Teori",
     "practice": "Pratik",
-    "prayerSettings": "Namaz Ayarları",
+    "advanced": "Gelişmiş",
       "appSettings": "Uygulama Ayarları",
       "quranSettings": "Kur'an Ayarları",
       "locationSettings": "Konum Ayarları",
       "settings": "Ayarlar",
       "systemLanguage": "Sistem Dili",
       "screenSaverImages": "Ekran Koruyucu Resimleri",
-      "animationDuration": "Animasyon Süresi (saniye)"
+      "animationDuration": "Animasyon Süresi (saniye)",
+      "update": "Güncelleme"
 }

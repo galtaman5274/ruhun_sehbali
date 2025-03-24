@@ -9,11 +9,17 @@ abstract class PlaylistEvent extends Equatable {
 }
 
 class AddMedia extends PlaylistEvent {
-  final List<String> url;
+  final List<PlaylistItem> url;
   const AddMedia(this.url);
 
   @override
   List<Object?> get props => [url];
 }
+class InitPlaylist extends PlaylistEvent {
+  final Map<String,dynamic> quranFiles;
+  const InitPlaylist(this.quranFiles);
 
+  @override
+  List<Object?> get props => [quranFiles];
+}
 class ClearPlaylist extends PlaylistEvent {}

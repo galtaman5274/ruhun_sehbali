@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ruhun_sehbali/features/screen_saver/bloc/screen_saver.dart';
 import 'package:ruhun_sehbali/features/settings/providers/ayine_json_cubit.dart';
 import 'package:ruhun_sehbali/features/settings/providers/data_source.dart';
-import 'package:ruhun_sehbali/features/settings/view/components/image_url_radio.dart';
 import '../../../localization/localization.dart';
 import '../components/locale_dropdown.dart';
 

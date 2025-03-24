@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:adhan/adhan.dart';
 import 'package:equatable/equatable.dart';
 import 'package:geocoding/geocoding.dart';
@@ -12,6 +11,7 @@ import '../../storage_controller/storage_controller.dart';
 
 part 'event.dart';
 part 'states.dart';
+
 const _storedDataKey = "stored_files_data";
 
 class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
@@ -35,6 +35,9 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
     on<PrayerTimeAdjustedEvent>(_onPrayerAdjustments);
     on<PrayerWeekDaysEvent>(_onPraterWeedDaysUpdatd);
     on<PrayerAzanTypeEvent>(_onPrayerAzanType);
+    on<PrayerAzanEvent>(_callAdhan);
+
+    on<UpdatePrayerSettingsEvent>(_onUpdatePrayerSettings);
   }
 
   /// **Load stored prayer settings and initialize prayer times**
@@ -117,18 +120,9 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
     });
   }
 
-  void callAdhan(PrayerAzanEvent event, Emitter<PrayerState> emit) async {
+  void _callAdhan(PrayerAzanEvent event, Emitter<PrayerState> emit) async {
     final weekday = DateTime.now().weekday;
-    final prayers = [
-      "01-Fajr",
-      "02-Tulu",
-      "03-Dhuhr",
-      "04-Asr",
-      "05-Maghrib",
-      "06-Isha",
-      "07-Suhoor",
-      "08-Iftar"
-    ];
+
     final weekdays = [
       'Monday',
       'Tuesday',
@@ -138,8 +132,9 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
       'Saturday',
       'Sunday'
     ];
+
     final isAdhan = state.prayerData.prayerWeekdays[event.azanPrayerType]
-            ?[weekdays[weekday + 1]] ??
+            ?[weekdays[weekday - 1]] ??
         false;
     if (isAdhan) {
       final storedJson = await _secureStorage.getValue(_storedDataKey);
@@ -149,12 +144,12 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
           : <String, dynamic>{}; // Initialize as empty Map<String, dynamic>
 
       if (storedData['AzanFiles'][state.prayerData.azanType]
-              [event.azanPrayerType] !=
+              [event.azanPrayerName][0]['local'] !=
           null) {
         final String path = storedData['AzanFiles'][state.prayerData.azanType]
-            [event.azanPrayerType];
-        final updatedData =
-            state.prayerData.copyWith(playAdhan: (isAdhan, path));
+            [event.azanPrayerName][0]['local'];
+
+        final updatedData = state.prayerData.copyWith(playAdhan: (true, path));
         emit(PrayerDataUpdated(updatedData));
       }
     }
@@ -172,31 +167,46 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
       state.prayerData.prayerTimes.maghrib,
       state.prayerData.prayerTimes.isha
     ];
-    for (var i = 0; i < prayerTimesList.length; i++) {
-      if (prayerTimesList[0] == now) {
-        add(PrayerAzanEvent('fajr'));
-      } else if (prayerTimesList[2] == now) {
-        add(PrayerAzanEvent('dhuhr'));
-      } else if (prayerTimesList[3] == now) {
-        add(PrayerAzanEvent('asr'));
-      } else if (prayerTimesList[4] == now) {
-        add(PrayerAzanEvent('maghrib'));
-      } else if (prayerTimesList[5] == now) {
-        add(PrayerAzanEvent('isha'));
+    bool isAdhan = false;
+    // Compare only hour and minute to avoid precision issues
+    for (int i = 0; i < prayerTimesList.length; i++) {
+      if (_isSameHourMinute(prayerTimesList[i], now)) {
+        isAdhan = true;
+        final prayerNames = ['fajr', '', 'dhuhr', 'asr', 'maghrib', 'isha'];
+        final prayers = [
+          "01-Fajr",
+          "02-Tulu",
+          "03-Dhuhr",
+          "04-Asr",
+          "05-Maghrib",
+          "06-Isha",
+          "07-Suhoor",
+          "08-Iftar"
+        ];
+        if (prayerNames[i].isNotEmpty) {
+          add(PrayerAzanEvent(prayerNames[i], prayers[i]));
+        }
       }
     }
+
     final nextPrayerTime = getNextPrayerTime(now, prayerTimesList);
     final remainingTime = nextPrayerTime != null
         ? _formatDuration(nextPrayerTime.difference(now))
         : _calculateTimeToNextFajr(now);
 
     final updatedData = state.prayerData.copyWith(
+      playAdhan: (isAdhan, state.prayerData.playAdhan.$2),
       remainingTime: remainingTime,
       currentTime: DateFormat('HH:mm').format(now),
       currentDate: DateFormat('MMMM d, yyyy').format(now),
     );
+
     updatePrayerStatus(now, prayerTimesList);
     emit(PrayerDataUpdated(updatedData));
+  }
+
+  bool _isSameHourMinute(DateTime a, DateTime b) {
+    return a.hour == b.hour && a.minute == b.minute && a.second == b.second;
   }
 
   /// **Get the next prayer time**
@@ -345,6 +355,39 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
               data.prayerTimes.calculationParameters.adjustments.maghrib
           ..adjustments.isha =
               data.prayerTimes.calculationParameters.adjustments.isha
+          ..madhab = Madhab.values[data.asrMethodIndex],
+      ),
+    );
+
+    emit(PrayerDataUpdated(updatedData));
+  }
+
+  Future<void> _onUpdatePrayerSettings(
+      UpdatePrayerSettingsEvent event, Emitter<PrayerState> emit) async {
+    final data = state.prayerData;
+    await _secureStorage.saveValue('country', data.country);
+    await _secureStorage.saveValue('state', data.state);
+    await _secureStorage.saveValue('city', data.city);
+    await _secureStorage.saveValue('longitude', data.longitude.toString());
+    await _secureStorage.saveValue('latitude', data.latitude.toString());
+    await _secureStorage.saveValue(
+        'calcMethod', data.calculationMethod.index.toString());
+    await _secureStorage.saveValue('asrIndex', data.asrMethodIndex.toString());
+
+    await _secureStorage.saveValue('fajr', 0.toString());
+    await _secureStorage.saveValue('tulu', 0.toString());
+    await _secureStorage.saveValue('dhuhr',
+        data.prayerTimes.calculationParameters.adjustments.dhuhr.toString());
+    await _secureStorage.saveValue('asr', 0.toString());
+    await _secureStorage.saveValue('maghrib', 0.toString());
+    await _secureStorage.saveValue('isha', 0.toString());
+    await _secureStorage.saveValue('azanType', data.azanType);
+    String jsonString = jsonEncode(data.prayerWeekdays);
+    await _secureStorage.saveValue('prayerWeekdays', jsonString);
+    final updatedData = state.prayerData.copyWith(
+      prayerTimes: PrayerTimes.today(
+        Coordinates(data.latitude, data.longitude),
+        CalculationMethod.values[data.calculationMethod.index].getParameters()
           ..madhab = Madhab.values[data.asrMethodIndex],
       ),
     );

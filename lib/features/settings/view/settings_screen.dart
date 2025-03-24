@@ -39,8 +39,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 children: [
                   const SizedBox(height: 20),
                   MenuItem(
-                    icon: Icons.access_time,
-                    section: context.l10n.prayerSettings,
+                    icon: Icons.location_on_outlined,
+                    section: context.l10n.locationSettings,
                     index: 0,
                     currentIndex: currentIndex,
                     func: setIndex,
@@ -53,15 +53,15 @@ class _SettingsPageState extends State<SettingsPage> {
                     func: setIndex,
                   ),
                   MenuItem(
-                    icon: Icons.location_on_outlined,
-                    section: context.l10n.locationSettings,
+                    icon: Icons.download,
+                    section: context.l10n.update,
                     index: 2,
                     currentIndex: currentIndex,
                     func: setIndex,
                   ),
                   MenuItem(
-                    icon: Icons.download,
-                    section: 'Download',
+                    icon: Icons.access_time,
+                    section: context.l10n.advanced,
                     index: 3,
                     currentIndex: currentIndex,
                     func: setIndex,
@@ -132,10 +132,10 @@ class Content extends StatelessWidget {
         child: IndexedStack(
           index: currentIndex,
           children: [
-            const PrayerSettingsTab(),
-            const AppSettingsTab(),
             SetupLocation(),
-            DownloadFilesTab()
+            const AppSettingsTab(),
+            DownloadFilesTab(),
+            const PrayerSettingsTab(),
           ],
         ),
       ),

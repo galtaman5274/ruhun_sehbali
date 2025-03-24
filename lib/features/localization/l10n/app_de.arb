@@ -13,12 +13,13 @@
     "video": "Video",
     "theory": "Theorie",
     "practice": "Praxis",
-    "prayerSettings": "Gebetseinstellungen",
+    "advanced": "Fortgeschritten",
       "appSettings": "App-Einstellungen",
       "quranSettings": "Koran-Einstellungen",
       "locationSettings": "Standorteinstellungen",
       "settings": "Einstellungen",
       "systemLanguage": "Systemsprache",
       "screenSaverImages": "Bildschirmschoner Bilder",
-      "animationDuration": "Animationsdauer (Sekunden)"
+      "animationDuration": "Animationsdauer (Sekunden)",
+      "update": "Aktualisierung"
 }

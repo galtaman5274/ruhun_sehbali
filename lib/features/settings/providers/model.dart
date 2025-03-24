@@ -4,7 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:ruhun_sehbali/features/storage_controller/storage_controller.dart';
 
 const _storedDataKey = "stored_files_data";
-const url = 'https://app.ayine.tv/Ayine/';
+const url = 'https://app.ayine.tv/Ayine';
 
 class FileData extends Equatable {
   // Add static instance
@@ -57,14 +57,28 @@ class FileData extends Equatable {
       final storedJson = await _storage.getValue(_storedDataKey);
       if (storedJson != null) {
         final Map<String, dynamic> data = jsonDecode(storedJson);
-        _instance = FileData.fromJson(data);
-        return _instance!;
+
+        // Cast the data safely
+        final alerts =
+            (data['Alert'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+        final azanFiles = data['AzanFiles'] as Map<String, dynamic>? ?? {};
+        final pictures = data['Pictures'] as Map<String, dynamic>? ?? {};
+        final quran = data['Quran'] as Map<String, dynamic>? ?? {};
+        final screenSaver = data['ScreenSaver'] as Map<String, dynamic>? ?? {};
+
+        _instance = FileData(
+            alerts: alerts,
+            azanFiles: azanFiles,
+            pictures: pictures,
+            quran: quran,
+            screenSaver: screenSaver);
+
+        return _instance;
       }
       return null;
-      //throw StateError('No stored data found');
     } catch (e) {
+      print('Error loading FileData: $e'); // Add logging for debugging
       return null;
-      //throw StateError('Failed to load FileData: $e');
     }
   }
 
@@ -106,11 +120,11 @@ class FileData extends Equatable {
 
   factory FileData.fromJson(Map<String, dynamic> json) {
     return FileData(
-      alerts: _addLocal(json["Alert"] ?? [], 'Alert'),
-      azanFiles: _cleanJson(json["AzanFiles"] ?? {},"AzanFiles"),
-      pictures: _cleanJson(json["Pictures"] ?? {},"Pictures"),
-      quran: _cleanJson(json["Quran"] ?? {},"Quran"),
-      screenSaver: _cleanJson(json["ScreenSaver"] ?? {},"ScreenSaver"),
+      alerts: _addLocal(json["Alert"] ?? [], '$url/Alert'),
+      azanFiles: _cleanJson(json["AzanFiles"] ?? {}, "$url/AzanFiles"),
+      pictures: _cleanJson(json["Pictures"] ?? {}, "$url/Pictures"),
+      quran: _cleanJson(json["Quran"] ?? {}, "$url/Quran"),
+      screenSaver: _cleanJson(json["ScreenSaver"] ?? {}, "$url/ScreenSaver"),
     );
   }
 
@@ -122,14 +136,16 @@ class FileData extends Equatable {
           "name": value["name"],
           "last_modified": value["last_modified"],
           'local': '',
-          'url': '$key/${value['name']}'
+          'url': '$key/${value['name']}',
+          'onPlayList':false
         });
       }
     }
     return localFiles;
   }
 
-  static Map<String, dynamic> _cleanJson(Map<String, dynamic> json,String url) {
+  static Map<String, dynamic> _cleanJson(
+      Map<String, dynamic> json, String url) {
     // Create a new map to store cleaned data
     Map<String, dynamic> cleanedJson = {};
 
@@ -140,10 +156,10 @@ class FileData extends Equatable {
       }
 
       if (value is List) {
-        cleanedJson[key] = _addLocal(value, key);
+        cleanedJson[key] = _addLocal(value, '$url/$key');
       } else if (value is Map<String, dynamic>) {
         // Recursively clean nested maps
-        cleanedJson[key] = _cleanJson(value,'$url/$key');
+        cleanedJson[key] = _cleanJson(value, '$url/$key');
       } else {
         cleanedJson[key] = value;
       }

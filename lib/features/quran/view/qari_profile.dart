@@ -9,14 +9,20 @@ import 'media_player_page.dart';
 class QariProfile extends StatelessWidget {
   final String qariName;
   final Map<String, dynamic> json;
+  final String qariImage;
+  final String qariDescription;
 
-  const QariProfile({super.key, required this.qariName, required this.json});
+  const QariProfile(
+      {super.key,
+      required this.qariName,
+      required this.json,
+      required this.qariImage,
+      required this.qariDescription});
 
   @override
   Widget build(BuildContext context) {
     final items = json.keys.toList();
-    final List<String> urls = [];
-    final List<String> names = [];
+
     final String url = 'https://app.ayine.tv/Ayine/Quran/';
     return Scaffold(
         appBar: AppBar(
@@ -40,75 +46,120 @@ class QariProfile extends StatelessWidget {
           tooltip: 'Go to Home',
           child: const Icon(Icons.home),
         ),
-        body: ListView.builder(
-          itemCount: items.length,
-          itemBuilder: (context, index) {
-            json[items[index]].forEach((item) {
-              urls.add('$url$qariName/${items[index]}/${item['name']}');
-              names.add(item['name']);
-            });
-            return GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => MediaList(
-                          quranList: names,
-                        )),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Image(
+                    image: AssetImage(
+                      qariImage,
+                    ),
+                    width: 200,
+                    height: 200,
+                  ),
+                  Column(
                     children: [
-                      Row(
-                        children: [
-                          Text('${index + 1}'),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Text(
-                            items[index],
-                            style: TextStyle(fontSize: 20),
-                          )
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          MaterialButton(
-                            onPressed: () {
-                              // Add the media URL to the playlist
-                              context.read<PlaylistBloc>().add(AddMedia(urls));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content:
-                                        Text('$qariName added to playlist')),
-                              );
-                            },
-                            child: Row(
-                              children: [
-                                Text('Add to p laylist'),
-                                Icon(Icons.list)
-                              ],
-                            ),
-                          ),
-                          MaterialButton(
-                            onPressed: () {
-                              
-                              context.read<AyineJsonCubit>().saveQuranToStorage(qariName, items[index]);
-                            },
-                            child: Row(
-                              children: [
-                                Text('download'),
-                                Icon(Icons.download)
-                              ],
-                            ),
-                          )
-                        ],
-                      )
-                    ]),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          qariDescription,
+                          softWrap: true, // Enables text wrapping
+                          overflow: TextOverflow.clip,
+                        ),
+                      ), // Ensures text doesn't overflow),
+                    ],
+                  ),
+                ],
               ),
-            );
-          },
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  //final List<String> urls = [];
+                  //final List<String> names = [];
+                  final List<PlaylistItem> playList = [];
+                  json[items[index]].forEach((item) {
+                    playList.add(PlaylistItem(
+                        localPath: item['local'],
+                        url: '$url$qariName/${items[index]}/${item['name']}',
+                        name: item['name']));
+                    // urls.add('$url$qariName/${items[index]}/${item['name']}');
+                    // names.add(item['name']);
+                  });
+
+                  return GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => MediaList(
+                                quranList: playList,
+                              )),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 40),
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Text('${index + 1}'),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  items[index],
+                                  style: TextStyle(fontSize: 20),
+                                )
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                MaterialButton(
+                                  onPressed: () {
+                                    // Add the media URL to the playlist
+                                    // context
+                                    //     .read<PlaylistBloc>()
+                                    //     .add(AddMedia(playList));
+                                    context.read<AyineJsonCubit>().onAddMediaList(qariName, items[index]);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(
+                                              '$qariName added to playlist')),
+                                    );
+                                  },
+                                  child: Row(
+                                    children: [
+                                      Text('Add to p laylist'),
+                                      Icon(Icons.list)
+                                    ],
+                                  ),
+                                ),
+                                MaterialButton(
+                                  onPressed: () {
+                                    context
+                                        .read<AyineJsonCubit>()
+                                        .saveQuranToStorage(
+                                            qariName, items[index]);
+                                  },
+                                  child: Row(
+                                    children: [
+                                      Text('download'),
+                                      Icon(Icons.download)
+                                    ],
+                                  ),
+                                )
+                              ],
+                            )
+                          ]),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ));
   }
 }

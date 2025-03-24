@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ruhun_sehbali/features/settings/providers/model.dart';
 import '../../storage_controller/storage_controller.dart';
 
 part 'event.dart';
@@ -79,7 +80,7 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
     //emit(ScreenSaverInitial(state.saverStateData));
     await _secureStorage.saveValue('imgUrl', event.imgUrl);
     emit(ScreenSaverUpdated(
-        state.saverStateData.copyWith(imgUrl: event.imgUrl,currentIndex: 0)));
+        state.saverStateData.copyWith(imgUrl: event.imgUrl, currentIndex: 0)));
   }
 
   void _onSetAnimationDuration(
@@ -99,22 +100,17 @@ class ScreenSaverBloc extends Bloc<ScreenSaverEvent, ScreenSaverState> {
     if (state.saverStateData.imgUrl == 'own') {
       add(LoadImagesFolder());
     } else {
-      final storedJson = await _secureStorage.getValue(_storedDataKey);
-
-      final Map<String, dynamic> storedData = storedJson != null
-          ? Map<String, dynamic>.from(jsonDecode(storedJson))
-          : <String, dynamic>{}; // Initialize as empty Map<String, dynamic>
-
-      if (storedData['ScreenSaver'][state.saverStateData.imgUrl] != null) {
-        final List<Widget> imageWidgets = storedData['ScreenSaver']
-                [state.saverStateData.imgUrl]
+      final fileData = await FileData.loadFromStorage();
+      if (fileData?.screenSaver[state.saverStateData.imgUrl] != null) {
+        final List<Widget> imageWidgets = fileData
+            ?.screenSaver[state.saverStateData.imgUrl]
             .map<Widget>((item) {
           return Image.file(
             File(item['local']),
             fit: BoxFit.cover,
           );
         }).toList();
-        
+
         emit(ScreenSaverUpdated(
             state.saverStateData.copyWith(images: imageWidgets)));
       }

@@ -47,7 +47,8 @@ class _PrayerSettingsTabState extends State<PrayerSettingsTab> {
             children: prayerAdjustmentsLocalization.keys.map((prayer) {
               return ListTile(
                 title: Text(
-                  prayerAdjustmentsLocalization[prayer]?.toUpperCase() ?? 'Prayer',
+                  prayerAdjustmentsLocalization[prayer]?.toUpperCase() ??
+                      'Prayer',
                   style: const TextStyle(fontSize: 16),
                 ),
                 trailing: IconButton(
@@ -65,7 +66,8 @@ class _PrayerSettingsTabState extends State<PrayerSettingsTab> {
                           prayerName: prayer,
                           prayerNameLocalized:
                               prayerAdjustmentsLocalization[prayer] ?? '',
-                              prayerTimes: state.prayerData.prayerWeekdays[prayer] ?? {},
+                          prayerTimes:
+                              state.prayerData.prayerWeekdays[prayer] ?? {},
                         ),
                       );
                     },
@@ -74,21 +76,6 @@ class _PrayerSettingsTabState extends State<PrayerSettingsTab> {
                 ),
               );
             }).toList(),
-          ),
-          const SizedBox(height: 30),
-          Center(
-            child: Row(
-              children: [
-                ElevatedButton(
-                  onPressed: () =>
-                      context.read<PrayerBloc>().add(SavePrayerSettingsEvent()),
-                  child: const Text('Save Adjustments'),
-                ),
-                SizedBox(
-                  width: 50,
-                ),
-              ],
-            ),
           ),
         ],
       );

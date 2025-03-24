@@ -13,12 +13,13 @@
     "video": "فيديو",
     "theory": "نظرية",
     "practice": "تطبيق",
-    "prayerSettings": "إعدادات الصلاة",
+    "advanced": "متقدم",
       "appSettings": "إعدادات التطبيق",
       "quranSettings": "إعدادات القرآن",
       "locationSettings": "إعدادات الموقع",
       "settings": "الإعدادات",
       "systemLanguage": "لغة النظام",
       "screenSaverImages": "صور شاشة التوقف",
-      "animationDuration": "مدة الرسوم المتحركة (ثواني)"
+      "animationDuration": "مدة الرسوم المتحركة (ثواني)",
+      "update": "تحديث "
 }

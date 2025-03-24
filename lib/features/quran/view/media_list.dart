@@ -5,7 +5,7 @@ import 'package:ruhun_sehbali/features/home/provider/navigation_provider.dart';
 import '../bloc/playlist/bloc.dart';
 
 class MediaList extends StatelessWidget {
-  final List<String> quranList;
+  final List<PlaylistItem> quranList;
   const MediaList({super.key, required this.quranList});
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class MediaList extends StatelessWidget {
                   SizedBox(
                     width: 10,
                   ),
-                  Text(quranList[index])
+                  Text(quranList[index].name)
                 ],
               ),
               trailing: MaterialButton(
@@ -41,13 +41,15 @@ class MediaList extends StatelessWidget {
                     SnackBar(content: Text('media added to playlist')),
                   );
                 },
-                child: Row(
-                  children: [Text('Add to p laylist'), Icon(Icons.list)],
+                child: SizedBox(
+                  width: 200,
+                  child: Row(
+                    children: [Text('Add to p laylist'), Icon(Icons.list)],
+                  ),
                 ),
               ),
             );
           },
-        )
-        );
+        ));
   }
 }

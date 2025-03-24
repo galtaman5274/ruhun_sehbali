@@ -13,12 +13,13 @@
     "video": "Video",
     "theory": "Theory",
     "practice": "Practice",
-    "prayerSettings": "Prayer Settings",
+    "advanced": "Advanced",
     "appSettings": "App Settings",
     "quranSettings": "Quran Settings",
     "locationSettings": "Location Settings",
     "settings": "Settings",
     "systemLanguage": "System Language",
     "screenSaverImages": "Screen Saver Images",
-    "animationDuration": "Animation Duration (seconds)"
+    "animationDuration": "Animation Duration (seconds)",
+    "update": "Update"
 }

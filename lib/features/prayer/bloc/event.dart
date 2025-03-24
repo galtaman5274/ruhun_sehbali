@@ -73,7 +73,9 @@ class UpdateAsrMethodEvent extends PrayerEvent {
 class SavePrayerSettingsEvent extends PrayerEvent {
   const SavePrayerSettingsEvent();
 }
-
+class UpdatePrayerSettingsEvent extends PrayerEvent {
+  const UpdatePrayerSettingsEvent();
+}
 // New events for loading location lists
 class LoadCountriesEvent extends PrayerEvent {}
 
@@ -88,7 +90,8 @@ class PrayerAzanTypeEvent extends PrayerEvent {
 }
 class PrayerAzanEvent extends PrayerEvent {
   final String azanPrayerType;
-  const PrayerAzanEvent(this.azanPrayerType);
+  final String azanPrayerName;
+  const PrayerAzanEvent(this.azanPrayerType,this.azanPrayerName);
 }
 class PrayerWeekDaysEvent extends PrayerEvent {
   final String prayer;

@@ -3,7 +3,7 @@ part of 'bloc.dart';
 
 // STATES
 class PlaylistState extends Equatable {
-  final List<String> playlist;
+  final List<PlaylistItem> playlist;
   const PlaylistState(this.playlist);
 
   @override

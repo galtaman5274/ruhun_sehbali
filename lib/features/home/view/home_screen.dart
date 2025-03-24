@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:ruhun_sehbali/features/home/provider/navigation_provider.dart';
 import 'package:ruhun_sehbali/features/prayer/bloc/prayer_bloc.dart';
+import 'package:ruhun_sehbali/features/quran/bloc/playlist/bloc.dart';
 import 'package:ruhun_sehbali/features/quran/bloc/qari/bloc.dart';
 import 'package:ruhun_sehbali/features/screen_saver/view/screen_saver.dart';
 import '../../adhan/adhan_page.dart';
@@ -63,9 +64,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   //     .state
                   //     .saverStateData
                   //     .imgUrl;
-                   context
+                  context
                       .read<QariBloc>()
                       .add(LoadQariList(state.fileData.quran));
+                  context.read<PlaylistBloc>().add(InitPlaylist(state.fileData.quran));
                   return ScreenSaverView();
                 }
                 // else if (state is AyineJsonLoadedStorage) {
@@ -94,13 +96,21 @@ class NavigationScreen extends StatelessWidget {
   const NavigationScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    return Consumer<NavigationProvider>(
+    String path = '';
+    return BlocListener<PrayerBloc, PrayerState>(listener: (context, state) {
+      if (state.prayerData.playAdhan.$1) {
+        path = state.prayerData.playAdhan.$2;
+        context.read<NavigationProvider>().setPage('adhan');
+      }
+    }, child: Consumer<NavigationProvider>(
       builder: (context, localeProvider, child) {
         switch (localeProvider.currentPage) {
           case 'settings':
             return const SettingsPage();
           case 'adhan':
-            return const AdhanPage();
+            return AdhanPage(
+              path: path,
+            );
           case 'home':
             return const HomePage();
           case 'quran':
@@ -109,6 +119,6 @@ class NavigationScreen extends StatelessWidget {
             return const HomePage();
         }
       },
-    );
+    ));
   }
 }
