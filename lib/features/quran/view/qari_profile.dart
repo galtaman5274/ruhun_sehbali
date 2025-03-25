@@ -83,9 +83,12 @@ class QariProfile extends StatelessWidget {
                   final List<PlaylistItem> playList = [];
                   json[items[index]].forEach((item) {
                     playList.add(PlaylistItem(
+                      fileName: items[index],
+                      qariName: qariName,
                         localPath: item['local'],
                         url: '$url$qariName/${items[index]}/${item['name']}',
                         name: item['name']));
+                        
                     // urls.add('$url$qariName/${items[index]}/${item['name']}');
                     // names.add(item['name']);
                   });
@@ -119,10 +122,6 @@ class QariProfile extends StatelessWidget {
                               children: [
                                 MaterialButton(
                                   onPressed: () {
-                                    // Add the media URL to the playlist
-                                    // context
-                                    //     .read<PlaylistBloc>()
-                                    //     .add(AddMedia(playList));
                                     context.read<AyineJsonCubit>().onAddMediaList(qariName, items[index]);
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(

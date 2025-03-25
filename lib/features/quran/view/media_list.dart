@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ruhun_sehbali/features/home/provider/navigation_provider.dart';
+import 'package:ruhun_sehbali/features/settings/providers/ayine_json_cubit.dart';
 
 import '../bloc/playlist/bloc.dart';
 
@@ -31,21 +32,37 @@ class MediaList extends StatelessWidget {
                   Text(quranList[index].name)
                 ],
               ),
-              trailing: MaterialButton(
-                onPressed: () {
-                  // Add the media URL to the playlist
-                  final playerState = context.read<PlaylistBloc>();
-                  playerState.add(AddMedia(
-                      playerState.state.playlist..add(quranList[index])));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('media added to playlist')),
-                  );
-                },
-                child: SizedBox(
-                  width: 200,
-                  child: Row(
-                    children: [Text('Add to p laylist'), Icon(Icons.list)],
-                  ),
+              trailing: SizedBox(
+                width: 300,
+                child: Row(
+                  children: [
+                    MaterialButton(
+                      onPressed: () {
+                        context.read<AyineJsonCubit>().onAddMedia(
+                            quranList[index].qariName,
+                            quranList[index].fileName,
+                            quranList[index].name);
+                     
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('media added to playlist')),
+                        );
+                      },
+                      child: Row(
+                        children: [Text('Add to p laylist'), Icon(Icons.list)],
+                      ),
+                    ),
+                    MaterialButton(
+                      onPressed: () {
+                        context.read<AyineJsonCubit>().saveQuranItemToStorage(
+                            quranList[index].qariName,
+                            quranList[index].fileName,
+                            quranList[index].name);
+                      },
+                      child: Row(
+                        children: [Text('Download'), Icon(Icons.download)],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );

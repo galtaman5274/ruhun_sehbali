@@ -29,8 +29,60 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
   })  : _dio = dio,
         dataSource = DataSource(dio),
         super(AyineJsonInitial()) {
-    // _initializeFileData();
+   
     // getAyineJson();
+  }
+
+  Future<void> _initializeFileData() async {
+    final storedJson = await _secureStorage.getValue(_storedDataKey);
+    if (storedJson != null) {
+      final finalJson = await getFileData();
+
+      try {
+        final Directory appDocDir = await getApplicationDocumentsDirectory();
+        final Directory directory = Directory('${appDocDir.path}/Alert');
+        if (!await directory.exists()) {
+          directory.createSync(recursive: true);
+          for (var j = 0; j < finalJson.alerts.length; j++) {
+            if (finalJson.alerts[j]['local'] == '') {
+              final response = await _dio.get(
+                finalJson.alerts[j]['url'],
+                options: Options(responseType: ResponseType.bytes),
+              );
+
+              if (response.statusCode == 200) {
+                final file =
+                    File('${directory.path}/${finalJson.alerts[j]['name']}');
+
+                // Write binary data to the file
+                await file.writeAsBytes(response.data);
+
+                // Optionally save to local in your ScreenSaver model
+                finalJson.alerts[j]['local'] = file.absolute.path;
+
+                print(finalJson.alerts[j]['local']);
+                await _secureStorage.saveValue(
+                    _storedDataKey, jsonEncode(finalJson.toJson()));
+                print('File saved: ${file.absolute.path}');
+              } else {
+                print(
+                    'Failed to download ${finalJson.alerts[j]}. Status code: ${response.statusCode}');
+              }
+            }
+          }
+          emit(AyineJsonInitial());
+          emit(AyineJsonLoaded(fileData: finalJson));
+        }
+      } catch (e) {
+        // emit(AyineJsonError(message: 'Error downloading images: $e'));
+        print(e);
+      }
+
+      // await _secureStorage.saveValue(
+      //     _storedDataKey, jsonEncode(finalJson.toJson()));
+      // emit(AyineJsonInitial());
+      // emit(AyineJsonLoaded(fileData: finalJson));
+    }
   }
 
   Future<void> updateLocalPath(
@@ -64,8 +116,6 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
       log('<><><><><><> response data: ${response.data['UpdateApk']}');
 
       if (response.statusCode == 200) {
-        // final fileData = FileData.fromJson(response.data);
-        // print(fileData.alerts);
         return response.data;
       } else {
         return null;
@@ -103,6 +153,22 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
     }
   }
 
+  Future<void> onAddMedia(String qari, String quranFile, String name) async {
+    final storedJson = await _secureStorage.getValue(_storedDataKey);
+    if (storedJson != null) {
+      final finalJson = await getFileData();
+      final mediaList = finalJson.quran[qari][quranFile];
+      for (var i = 0; i < mediaList.length; i++) {
+        if (finalJson.quran[qari][quranFile][i]['name'] == name)
+          finalJson.quran[qari][quranFile][i]['onPlayList'] = true;
+      }
+      await _secureStorage.saveValue(
+          _storedDataKey, jsonEncode(finalJson.toJson()));
+      emit(AyineJsonInitial());
+      emit(AyineJsonLoaded(fileData: finalJson));
+    }
+  }
+
   Future<Map<String, dynamic>> getFileDatas() async {
     final storedJson = await _secureStorage.getValue(_storedDataKey);
 
@@ -111,8 +177,62 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
     return storedData;
   }
 
-  Future<void> saveQuranToStorage(String qari, String quranFile,
-      [String? fileName]) async {
+  Future<void> saveQuranItemToStorage(
+      String qari, String quranFile, String fileName) async {
+    final storedJson = await _secureStorage.getValue(_storedDataKey);
+
+    if (storedJson != null) {
+      final finalJson = await getFileData();
+      final qaris = finalJson.quran[qari];
+
+      //final String url = 'https://app.ayine.tv/Ayine/Quran/$qari';
+
+      if (qaris[quranFile].isNotEmpty) {
+        try {
+          final Directory appDocDir = await getApplicationDocumentsDirectory();
+          final Directory directory =
+              Directory('${appDocDir.path}/Quran/$qari/$quranFile');
+
+          directory.createSync(recursive: true);
+          for (var j = 0; j < qaris[quranFile].length; j++) {
+            if (qaris[quranFile][j]['name'] == fileName) {
+              final response = await _dio.get(
+                qaris[quranFile][j]['url'],
+                options: Options(responseType: ResponseType.bytes),
+              );
+
+              if (response.statusCode == 200) {
+                final file =
+                    File('${directory.path}/${qaris[quranFile][j]['name']}');
+
+                // Write binary data to the file
+                await file.writeAsBytes(response.data);
+
+                // Optionally save to local in your ScreenSaver model
+                finalJson.quran[qari][quranFile][j]['local'] =
+                    file.absolute.path;
+
+                print(finalJson.quran[qari][quranFile][j]['local']);
+                await _secureStorage.saveValue(
+                    _storedDataKey, jsonEncode(finalJson.toJson()));
+                print('File saved: ${file.absolute.path}');
+              } else {
+                print(
+                    'Failed to download ${qaris[qari][quranFile]}. Status code: ${response.statusCode}');
+              }
+            }
+          }
+          emit(AyineJsonInitial());
+          emit(AyineJsonLoaded(fileData: finalJson));
+        } catch (e) {
+          // emit(AyineJsonError(message: 'Error downloading images: $e'));
+          print(e);
+        }
+      }
+    }
+  }
+
+  Future<void> saveQuranToStorage(String qari, String quranFile) async {
     final storedJson = await _secureStorage.getValue(_storedDataKey);
 
     if (storedJson != null) {
@@ -376,6 +496,7 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
           final finalData = FileData.fromJson(newData);
           await finalData.saveToStorage(_secureStorage);
           await _secureStorage.saveValue(_lastUpdateKey, now.toString());
+          _initializeFileData();
           emit(AyineJsonLoaded(fileData: finalData));
         }
       } catch (e) {
@@ -383,7 +504,7 @@ class AyineJsonCubit extends Cubit<AyineJsonState> {
       }
     } else {
       final finalData = await FileData.loadFromStorage();
-
+      _initializeFileData();
       if (finalData != null) emit(AyineJsonLoaded(fileData: finalData));
     }
   }

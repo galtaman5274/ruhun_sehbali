@@ -1,8 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
-
-import '../../../storage_controller/storage_controller.dart';
-
 part 'events.dart';
 part 'states.dart';
 
@@ -11,25 +8,12 @@ class PlaylistItem {
   final String localPath;
   final String url;
   final String name;
+  final String qariName;
+  final String fileName;
 
   PlaylistItem(
-      {required this.localPath, required this.url, required this.name});
+      {required this.localPath, required this.url, required this.name,required this.qariName, required this.fileName});
 
-  // // Convert object to Map for storage
-  // Map<String, dynamic> toJson() => {
-  //       "localPath": localPath,
-  //       "url": url,
-  //       "name":name
-  //     };
-
-  // // Convert Map to object
-  // factory PlaylistItem.fromJson(Map<String, dynamic> json) {
-  //   return PlaylistItem(
-  //     localPath: json["localPath"],
-  //     url: json["url"],
-  //     name: json['name']
-  //   );
-  // }
 }
 
 // BLOC
@@ -49,12 +33,13 @@ class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
         quranFiles[keys[i]][innerKeys[j]].forEach((item) {
           if (item['onPlayList'] == true) {
             playlist.add(PlaylistItem(
+              fileName: innerKeys[j],
+              qariName: keys[i],
                 localPath: item['local'],
                 url: item['url'],
                 name: item['name']));
           }
         });
-        
       }
     }
     emit(PlaylistState(playlist));
@@ -74,8 +59,6 @@ class PlaylistBloc extends Bloc<PlaylistEvent, PlaylistState> {
     final updatedPlaylist = [...state.playlist, ...event.url];
     emit(PlaylistState(updatedPlaylist));
   }
-
-  
 
   void _onClearPlaylist(
       ClearPlaylist event, Emitter<PlaylistState> emit) async {
