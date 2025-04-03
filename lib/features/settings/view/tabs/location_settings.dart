@@ -187,6 +187,9 @@ class SetupLocation extends StatelessWidget {
                   ],
                 ),
               ),
+              SizedBox(
+                width: 200,
+              ),
               Expanded(
                 child: Column(
                   children: [

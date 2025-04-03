@@ -28,11 +28,11 @@ class DataSource {
     try {
       // Request permission
       final permission1 = await _requestPermission(Permission.storage);
-      final permission2 =
-          await _requestPermission(Permission.manageExternalStorage);
+      // final permission2 =
+      //     await _requestPermission(Permission.manageExternalStorage);
       final permission3 =
           await _requestPermission(Permission.requestInstallPackages);
-      if (permission1 && permission2 && permission3) {
+      if (permission1 && permission3) {
         final filePath = await _downloadAPK('$baseApi$version/$apkPath');
         print('file path -> $filePath');
         await _installAPK(filePath);
@@ -71,9 +71,9 @@ class DataSource {
     try {
       print('>>>>> Installing started');
       final result = await OpenFile.open(filePath);
-      print('Install finished : ${result.message}');
+      print('++++++ Install finished : ${result.message}');
     } catch (e) {
-      print("Installation failed: $e");
+      print("?????? Installation failed: $e");
     }
   }
 

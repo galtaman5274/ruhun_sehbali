@@ -89,38 +89,39 @@ class AppSettingsTab extends StatelessWidget {
                   ),
                 ),
                 ElevatedButton(
-                    onPressed: () async {
-                      final String? newVersion = await _checkUpdate();
-                      // if (hasUpdate) {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog.adaptive(
-                          content: Text(newVersion != null
-                              ? 'Ruhun Şehbali uygulamasının yeni versiyonu yüklenmiştir.\nUygulamanızı güncellemek ister misiniz?'
-                              : 'Yeni güncelleme mevcut değil.'),
-                          actions: [
+                  onPressed: () async {
+                    final String? newVersion = await _checkUpdate();
+                    // if (hasUpdate) {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog.adaptive(
+                        content: Text(newVersion != null
+                            ? 'Ruhun Şehbali uygulamasının yeni versiyonu yüklenmiştir.\nUygulamanızı güncellemek ister misiniz?'
+                            : 'Yeni güncelleme mevcut değil.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text('İPTAL'),
+                          ),
+                          if (newVersion != null)
                             TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: Text('İPTAL'),
+                              onPressed: () async {
+                                Navigator.pop(context);
+                                await _downloadApk(newVersion);
+                              },
+                              child: Text('TAMAM'),
                             ),
-                            if (newVersion != null)
-                              TextButton(
-                                onPressed: () async {
-                                  Navigator.pop(context);
-                                  await _downloadApk(newVersion);
-                                },
-                                child: Text('TAMAM'),
-                              ),
-                          ],
-                        ),
-                      );
-                      // } else {
+                        ],
+                      ),
+                    );
+                    // } else {
 
-                      // }
-                    },
-                    child: Text(
-                      'Kontrol et'.toUpperCase(),
-                    ))
+                    // }
+                  },
+                  child: Text(
+                    'Kontrol et'.toUpperCase(),
+                  ),
+                )
               ],
             ),
             const SizedBox(height: 40),
